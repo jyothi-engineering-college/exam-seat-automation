@@ -4,9 +4,9 @@ import Navbar from "../../components/Navbar";
 import NavigationTab from "../../components/NavigationTab";
 const Sharedlayout = () => {
   return (
-      <>
-          <Navbar />
-          <NavigationTab/>
+    <>
+      <Navbar />
+      <NavigationTab />
       <Outlet />
     </>
   );

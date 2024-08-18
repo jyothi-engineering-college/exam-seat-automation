@@ -1,0 +1,26 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30px 30px 10px 30px;
+}
+
+.brandLogo {
+  height: 45px;
+  width: auto;
+}
+
+.appName {
+  margin: 0 auto; 
+font-size: 36px;
+  text-align: center;
+  padding-top: 5px;
+  flex-grow: 1; 
+}
+
+.welcomeName {
+  margin: 0;
+  font-weight: 600;
+  padding-top: 15px;
+  text-align: right; 
+}
