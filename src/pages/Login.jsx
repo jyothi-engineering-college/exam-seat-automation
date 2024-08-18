@@ -2,7 +2,7 @@ import "../styles/Login.css";
 import { Button, Checkbox, Form, Input, Flex } from "antd";
 
 
-import FlexContainer from "../utils/FlexContainer";
+import FlexContainer from "../components/FlexContainer";
 const Login = () => {
   return (
     <>
@@ -10,7 +10,7 @@ const Login = () => {
         <img className="loginLogo" src="../Logo.png" alt="" srcset="" />
       </div>
       <div className="login">
-        <FlexContainer>
+        {/* <FlexContainer>
           <div className="loginVector">
             <img src="../loginVector.png" alt="" srcset="" />
             <p>Organize exams with ease !</p>
@@ -60,7 +60,19 @@ const Login = () => {
               or <a href="">Register now!</a>
             </Form.Item>
           </Form>
-        </FlexContainer>
+        </FlexContainer> */}
+        <div className="loginVector">
+            <img src="../loginVector.png" alt="" srcset="" />
+            <p>Organize exams with ease !</p>
+          </div>
+          <div className="loginDivider"></div>
+          <div className="txtb">
+            <h3>Login</h3>
+            <input type="text" placeholder="Username" />
+            <input type="password" placeholder="Password" />
+            <button className="logbtn">Login</button>
+          </div>
+         
       </div>
     </>
   );
