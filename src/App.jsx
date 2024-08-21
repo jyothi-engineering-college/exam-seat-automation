@@ -6,6 +6,7 @@ import ProtectedRoute from "./pages/ProtectedRoute";
 import Sharedlayout from "./pages/dashboard/SharedLayout";
 import Tablesample from "./pages/dashboard/tableSample";
 import Home from "./pages/dashboard/Home";
+import SignUp from "./pages/SignUp";
 
 const App = () => {
   return (
@@ -15,12 +16,14 @@ const App = () => {
           path="/"
           element={
             <ProtectedRoute>
-              <Sharedlayout />
+              <Login/>
             </ProtectedRoute>
           }
+
         >
           <Route index element={<Home/>} />
           <Route path="dept-exams" element={<Tablesample/>} />
+          <Route path="signup" element={<SignUp/>} />
           
         </Route>
 

@@ -1,8 +1,6 @@
-import { Link } from "react-router-dom";
 import "../styles/Login.css";
-import SignUp from "./SignUp";
 
-const Login = () => {
+const SignUp = () => {
   return (
     <>
       <div clasName="loginHeader">
@@ -15,11 +13,11 @@ const Login = () => {
           </div>
           <div className="loginDivider"></div>
           <div className="txtb">
-            <h3>Login</h3>
+            <h3>Sign Up</h3>
             <input type="text" placeholder="Username" />
             <input type="password" placeholder="Password" />
-            <button className="logbtn">Login</button>
-            <p>Create a new account?<Link to='/signup'>Sign Up</Link></p>
+            <button className="logbtn">Sign Up</button>
+            <p>Already have an  account?<Link to = "/login">Log In</Link></p>
           </div>
          
       </div>
@@ -27,4 +25,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
