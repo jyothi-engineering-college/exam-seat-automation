@@ -1,9 +1,38 @@
 import "../styles/Login.css";
-import { Button, Checkbox, Form, Input, Flex } from "antd";
+import React , {useState} from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuth,signInWithEmailAndPassword
+ } from "@firebase/auth";
 
+// import { auth } from "../utils/firebaseConfig";
 
-import FlexContainer from "../components/FlexContainer";
 const Login = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    const auth = getAuth();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (error) {
+      alert("Sorry, Invalid Username or Password!");
+    }
+  }
+
+  const toRegister = () => {
+    navigate("/register");
+  };
+
+  function handleEmailChange(e) {
+    setEmail(e.target.value);
+  };
+
+  function handlePasswordChange(e) { 
+    setPassword(e.target.value);
+  };
+
   return (
     <>
       <div clasName="loginHeader">
@@ -68,9 +97,9 @@ const Login = () => {
           <div className="loginDivider"></div>
           <div className="txtb">
             <h3>Login</h3>
-            <input type="text" placeholder="Username" />
-            <input type="password" placeholder="Password" />
-            <button className="logbtn">Login</button>
+            <input type="text" onChange={handleEmailChange} placeholder="Username" />
+            <input type="password" onChange={handlePasswordChange} placeholder="Password" />
+            <button className="logbtn" onClick={handleLogin}>Login</button>
           </div>
          
       </div>

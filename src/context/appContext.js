@@ -14,7 +14,7 @@ const Appcontext = React.createContext();
 
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initalState);
-
+  
   return (
     <Appcontext.Provider
       value={{
