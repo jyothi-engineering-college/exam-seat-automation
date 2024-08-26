@@ -1,18 +1,11 @@
 .navigationTab
 {
-    border-radius: 8px;
-background: var(--Curious-Blue-200, #B9E8FE);
+border-radius: 8px;
+background:  #B9E8FE;
 box-shadow: 0px 4px 19.4px 0px rgba(7, 49, 74, 0.25);
-color: var(--Curious-Blue-900, #0B4D6F);
-font-family: Poppins;
 font-size: 16px;
 font-style: normal;
-font-weight: 400;
-line-height: 24px; /* 150% */
+font-weight: 500;
+line-height: 24px; 
 padding: 11px 15px;
-text-align: center  ;
-width: 30%;
-display: block;
-margin-left: auto;
-margin-right: auto;
 }

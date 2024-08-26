@@ -1,0 +1,38 @@
+.table-container {
+  width: 50%;
+  margin-top: 50px;
+  border: 1px solid rgba(7, 49, 74, 0.14); /* Outer border */
+  border-radius: 10px; /* Adjust this for the desired curve */
+  overflow: hidden; /* Ensure rounded corners are visible */
+  box-shadow: 0 4px 8px rgba(12, 81, 102, 0.1); /* Add drop shadow */
+}
+
+.my-table {
+  width: 100%; /* Make sure the table takes the full width of the container */
+  border-collapse: separate;
+  border-spacing: 0; /* Ensure no gaps between cells */
+}
+
+th {
+  background-color: #e1f3ff;
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid rgba(7, 49, 74, 0.14);
+  border-right: 1px solid rgba(7, 49, 74, 0.14);
+}
+
+td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(7, 49, 74, 0.14);
+  border-right: 1px solid rgba(7, 49, 74, 0.14);
+}
+
+.my-table th:last-child,
+.my-table td:last-child {
+  border-right: none;
+}
+
+.my-table tr:last-child td {
+  border-bottom: none;
+}
