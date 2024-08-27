@@ -12,7 +12,7 @@ const Fallback = ({ error, resetErrorBoundary }) => {
           <Button className="refreshbutton" type="primary"  onClick={resetErrorBoundary}>
             Refresh</Button>
         </div>
-     <img className="error" src="/Error.svg" alt="Error" />
+     <img className="error" srcSet="/Error.svg" alt="Error" />
       </FlexContainer>
     </>
   );

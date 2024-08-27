@@ -9,35 +9,35 @@ function Home() {
         <div className="underline"></div>
         <div className="tcwrap">
           <div className="tcard">
-            <img src="../book.svg" alt="hi" />
+            <img srcSet="../book.svg" alt="hi" />
             <div className="cdet">
               <h3>CS 21</h3>
               <p>Slot A</p>
             </div>
           </div>
           <div className="tcard">
-            <img src="../book.svg" alt="hi" />
+            <img srcSet="../book.svg" alt="hi" />
             <div className="cdet">
               <h3>CS 21</h3>
               <p>Slot A</p>
             </div>
           </div>{" "}
           <div className="tcard">
-            <img src="../book.svg" alt="hi" />
+            <img srcSet="../book.svg" alt="hi" />
             <div className="cdet">
               <h3>CS 21</h3>
               <p>Slot A</p>
             </div>
           </div>
           <div className="tcard">
-            <img src="../book.svg" alt="hi" />
+            <img srcSet="../book.svg" alt="hi" />
             <div className="cdet">
               <h3>CS 21</h3>
               <p>Slot A</p>
             </div>
           </div>
           <div className="tcard">
-            <img src="../book.svg" alt="hi" />
+            <img srcSet="../book.svg" alt="hi" />
             <div className="cdet">
               <h3>CS 21</h3>
               <p>Slot A</p>
