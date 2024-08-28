@@ -4,6 +4,8 @@ import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input } from "antd";
 import { useAppContext } from "../context/AppContext";
 import { useEffect } from "react";
+import FlexContainer from "./FlexContainer";
+import { Alert } from "antd";
 
 
 const initialState = {
@@ -11,7 +13,7 @@ const initialState = {
   email: "",
   password: "",
   isMember: true,
-};
+};      
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -29,24 +31,14 @@ const LoginForm = () => {
     user,
     isLoading,
     showAlert,
-    displayAlert,
-    registerUser,
-    loginUser,
     setupUser,
+    alertText,
   } = useAppContext();
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
-  // const handleLogin = async () => {
-  //   try {
-  //     await signInWithEmailAndPassword(auth, email, password);
-  //     navigate("/");
-  //   } catch (error) {
-  //     alert("Sorry, Invalid Username or Password!");
-  //   }
-  // };
 
   const onFinish = () => {
     const { username, email, password, isMember } = values;
@@ -86,6 +78,8 @@ const LoginForm = () => {
           onFinish={onFinish}
         >
           <Form.Item
+            name="email"
+            rules={[{ required: true, message: "Please input your Email!" }]}
             className="coloroverwrite"
           >
             <Input
@@ -93,24 +87,25 @@ const LoginForm = () => {
               prefix={<MailOutlined />}
               type="email"
               name="email"
-              value={values.email}
               onChange={handleChange}
               placeholder="Email"
-              required  
+              // required
             />
           </Form.Item>
 
           {!values.isMember && (
             <Form.Item
+              name="username"
+              rules={[
+                { required: true, message: "Please input your username!" },
+              ]}
               className="coloroverwrite"
-             
             >
               <Input
                 className="coloroverwrite"
                 prefix={<UserOutlined />}
                 type="text"
                 name="username"
-                value={values.username}
                 onChange={handleChange}
                 placeholder="Username"
                 required
@@ -119,10 +114,11 @@ const LoginForm = () => {
           )}
 
           <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Please input your password!" }]}
             className="coloroverwrite"
-            value={values.password}
           >
-            <Input
+            <Input.Password
               className="coloroverwrite"
               prefix={<LockOutlined />}
               type="password"
@@ -144,18 +140,18 @@ const LoginForm = () => {
                 ? "Please Wait 🌞"
                 : values.isMember
                 ? "Login"
-                :"Register"}
+                : "Register"}
             </Button>
           </Form.Item>
 
-          {showAlert && <p>Wrong password</p>}
+          {showAlert &&  <Alert message={alertText} type="error" />}
 
-          <div>
-            {values.isMember ?  "Not a member yet ? ":"Already a member ? "}
-            <p type="button" onClick={toggleMember} className="member-btn">
-              {values.isMember ?"Register Now!": "Login Here" }
+          <FlexContainer>
+            {values.isMember ? "Not a member yet ? " : "Already a member ? "}
+            <p onClick={toggleMember} className="member-btn">
+              {values.isMember ? "Register Now!" : "Login Here"}
             </p>
-          </div>
+          </FlexContainer>
         </Form>
       </div>
     </>

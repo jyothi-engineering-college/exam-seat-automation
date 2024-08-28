@@ -3,6 +3,7 @@ import reducer from "./reducers";
 import {
   CLEAR_ALERT,
   DISPLAY_ALERT,
+  LOGOUT_USER,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
   SETUP_USER_SUCCESS,
@@ -10,7 +11,14 @@ import {
 import { auth, db } from "../utils/firebaseConfig";
 import { signInWithEmailAndPassword } from "@firebase/auth";
 import { createUserWithEmailAndPassword } from "@firebase/auth";
-import {  doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 
 const user = localStorage.getItem("user");
 
@@ -26,8 +34,11 @@ const AppContext = createContext();
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const displayAlert = () => {
-    dispatch({ type: DISPLAY_ALERT });
+  const displayAlert = (msg) => {
+    dispatch({
+      type: DISPLAY_ALERT,
+      payload: { msg },
+    });
     clearAlert();
   };
 
@@ -47,7 +58,7 @@ const AppProvider = ({ children }) => {
 
   const setupUser = async ({ currentUser, endPoint, alertText }) => {
     const { username, email, password } = currentUser;
-
+    let user = {};
     dispatch({ type: SETUP_USER_BEGIN });
     try {
       if (endPoint === "register") {
@@ -58,41 +69,41 @@ const AppProvider = ({ children }) => {
         );
         const createUser = data.user;
         await setDoc(doc(db, "users", createUser.uid), {
-          name: username,
+          username: username,
           email: email,
         });
-        const user={username,email}
-        dispatch({
-          type: SETUP_USER_SUCCESS,
-          payload: { user, alertText },
-        });
-        addUserToLocalStorage({ user });
+        user = { username, email };
       } else {
-                console.log(email);
+        let data = await signInWithEmailAndPassword(auth, email, password);
+        const userEmail = data.user.email;
 
-        const data = await signInWithEmailAndPassword(auth, email, password);
-        const { user } = data.user;
-        
-        const userEmail = user.email;
-
-        dispatch({
-          type: SETUP_USER_SUCCESS,
-          payload: { user, alertText },
-        });
-        addUserToLocalStorage({ user });
+        const usersCollection = collection(db, "users");
+        const q = query(usersCollection, where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);        
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((doc) => {
+            const { username, email } = doc.data();
+            user = { username, email };
+          }); 
+        }
       }
+      dispatch({
+        type: SETUP_USER_SUCCESS,
+        payload: { user, alertText },
+      });
+      addUserToLocalStorage({ user });
     } catch (error) {
-      console.log(error);
-
+       const errormsg = error.message.split("/")[1];
       dispatch({
         type: SETUP_USER_ERROR,
-        payload: { msg: error.message },
       });
+      displayAlert(errormsg);
+
       clearAlert();
     }
   };
 
-  const logoutUser = () => {
+  const logoutUser = () => {    
     dispatch({ type: LOGOUT_USER });
     removeUserFromTheLocalStorage();
   };

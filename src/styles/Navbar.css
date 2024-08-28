@@ -24,3 +24,10 @@ font-size: 36px;
   padding-top: 15px;
   text-align: right; 
 }
+.ant-dropdown-menu-item{
+  background-color: #F0F9FF;
+  border-color: #F0F9FF;
+}
+.anticon-down {
+  margin-top: 20px;
+}

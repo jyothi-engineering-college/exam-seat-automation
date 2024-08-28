@@ -1,10 +1,39 @@
+import { Space } from "antd";
+import { useAppContext } from "../context/AppContext";
 import "../styles/Navbar.css"
+import { DownOutlined, UserOutlined } from "@ant-design/icons";
+import { Dropdown } from "antd";
 const Navbar = () => {
+  const { user, logoutUser } = useAppContext(); 
+  const items = [
+    {
+      key: "0",
+      danger: true,
+      label: "Logout",
+      icon: <UserOutlined />,
+      onClick: () => {
+        logoutUser()
+      },
+    },
+  ];
   return (
     <div className="navbar">
-      <img className="brandLogo" srcSet="../Logo.png" alt=""  />
-        <h2 className="appName">Exam Seat Automation</h2>
-      <p className="welcomeName">Welcome, Name</p>
+      <img className="brandLogo" srcSet="../Logo.png" alt="" />
+      <h2 className="appName">Exam Seat Automation</h2>
+      <Dropdown
+        menu={{
+          items,
+        }}
+      >
+        <a
+          onClick={(e) => e.preventDefault()}
+        >
+          <Space>
+            <p className="welcomeName">Welcome, {user.username}</p>
+            <DownOutlined />
+          </Space>
+        </a>
+      </Dropdown>
     </div>
   );
 }

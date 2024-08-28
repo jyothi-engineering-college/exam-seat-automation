@@ -1,5 +1,5 @@
 import { Segmented } from "antd";
-import "./navtab.css";
+import "../styles/Navtab.css";
 import { useNavigate } from "react-router-dom";
 
 const NavigationTab = () => {
