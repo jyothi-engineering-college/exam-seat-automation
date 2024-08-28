@@ -9,7 +9,7 @@ const NavigationTab = () => {
     <center>
       <Segmented
         className="navigationTab"
-        options={["Home", "Exam Dept", "Slots", "Classes"]}
+        options={["Home", "Slots","Departments","Supply","Dropout/Rejoin","Classes","Notice Board", "Dept View", "Class View",]}
         onChange={(value) => {
 
           navigate("/dept-exams");

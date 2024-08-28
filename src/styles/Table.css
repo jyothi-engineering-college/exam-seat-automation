@@ -1,31 +1,69 @@
 .table-container {
-  width: 50%;
+  width: 100%; /* Ensure the container takes full width */
+  max-width: 100%; /* Prevent it from exceeding the viewport */
   margin-top: 50px;
   border: 1px solid rgba(7, 49, 74, 0.14); /* Outer border */
   border-radius: 10px; /* Adjust this for the desired curve */
-  overflow: hidden; /* Ensure rounded corners are visible */
   box-shadow: 0 4px 8px rgba(12, 81, 102, 0.1); /* Add drop shadow */
+  max-height: 400px; /* Adjust this height as needed */
+  overflow: hidden; /* Hide overflow to manage scrolling separately */
+  display: flex;
+  flex-direction: column;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+
+}
+
+.heading-left {
+  margin: 0;
+}
+
+.action-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+.table-wrapper {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  width: 100%;
 }
 
 .my-table {
-  width: 100%; /* Make sure the table takes the full width of the container */
+  width: 100%; /* Ensure the table takes the full width of the container */
   border-collapse: separate;
   border-spacing: 0; /* Ensure no gaps between cells */
+  table-layout: fixed; /* Ensure columns stay within their defined width */
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(7, 49, 74, 0.14);
+  border-right: 1px solid rgba(7, 49, 74, 0.14);
+  white-space: nowrap; /* Prevent text from wrapping */
 }
 
 th {
   background-color: #e1f3ff;
   text-align: left;
-  padding: 10px;
-  border-bottom: 1px solid rgba(7, 49, 74, 0.14);
-  border-right: 1px solid rgba(7, 49, 74, 0.14);
 }
 
-td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid rgba(7, 49, 74, 0.14);
-  border-right: 1px solid rgba(7, 49, 74, 0.14);
+th:first-child, td:first-child {
+  border-left: 1px solid rgba(7, 49, 74, 0.14); /* Add left border for the first column */
 }
 
 .my-table th:last-child,
@@ -35,4 +73,12 @@ td {
 
 .my-table tr:last-child td {
   border-bottom: none;
+}
+
+.column-1 {
+  width: 150px; /* Adjust column width as needed */
+}
+
+.column-2 {
+  width: 150px; /* Adjust column width as needed */
 }

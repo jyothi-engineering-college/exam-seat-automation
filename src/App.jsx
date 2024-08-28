@@ -4,7 +4,6 @@ import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import Sharedlayout from "./pages/dashboard/SharedLayout";
-import Tablesample from "./pages/dashboard/Tablesample";
 import Home from "./pages/dashboard/Home";
 
 const App = () => {
@@ -20,7 +19,7 @@ const App = () => {
           }
         >
           <Route index element={<Home/>} />
-          <Route path="dept-exams" element={<Tablesample/>} />
+          {/* <Route path="dept-exams" element={<Tablesample/>} /> */}
           
         </Route>
 
