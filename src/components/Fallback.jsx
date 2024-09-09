@@ -1,6 +1,6 @@
-import "../styles/Error.css";
 import FlexContainer from "../components/FlexContainer";
 import { Button } from "antd";
+import "../styles/Error.css";
 
 const Fallback = ({ error, resetErrorBoundary }) => {
   return (

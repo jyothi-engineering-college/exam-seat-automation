@@ -56,7 +56,7 @@ const AppProvider = ({ children }) => {
     localStorage.removeItem("user");
   };
 
-  const setupUser = async ({ currentUser, endPoint, alertText }) => {
+  const setupUser = async ({ currentUser, endPoint }) => {
     const { username, email, password } = currentUser;
     let user = {};
     dispatch({ type: SETUP_USER_BEGIN });
@@ -89,7 +89,7 @@ const AppProvider = ({ children }) => {
       }
       dispatch({
         type: SETUP_USER_SUCCESS,
-        payload: { user, alertText },
+        payload: { user },
       });
       addUserToLocalStorage({ user });
     } catch (error) {

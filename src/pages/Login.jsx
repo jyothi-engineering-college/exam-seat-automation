@@ -2,8 +2,6 @@ import LoginForm from "../components/LoginForm";
 import LoginVector from "../components/LoginVector";
 import "../styles/Login.css";
 
-
-
 const Login = () => {
   return (
     <>

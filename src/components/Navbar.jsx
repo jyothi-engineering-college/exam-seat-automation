@@ -1,8 +1,8 @@
 import { Space } from "antd";
 import { useAppContext } from "../context/AppContext";
-import "../styles/Navbar.css"
 import { DownOutlined, UserOutlined } from "@ant-design/icons";
 import { Dropdown } from "antd";
+import "../styles/Navbar.css"
 const Navbar = () => {
   const { user, logoutUser } = useAppContext(); 
   const items = [

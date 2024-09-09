@@ -31,7 +31,6 @@ const reducer = (state, action) => {
         ...state,
         isLoading: false,
         user: action.payload.user,
-        showAlert: true,
       };
 
     case SETUP_USER_ERROR:

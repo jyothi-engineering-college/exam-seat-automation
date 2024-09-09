@@ -1,6 +1,4 @@
-import React from 'react';
 import '../../styles/home.css';
-import TableContainer from '../../components/TableContainer';
 
 function Home() {
   return (
@@ -46,7 +44,6 @@ function Home() {
           </div>
         </div>
       </div>
-      <TableContainer />
     </>
   );
 }

@@ -48,13 +48,11 @@ const LoginForm = () => {
       setupUser({
         currentUser,
         endPoint: "login",
-        alertText: "Login Successfull ! 😊",
       });
     } else {
       setupUser({
         currentUser,
         endPoint: "register",
-        alertText: "Registration Successfull ! 😊",
       });
     }
   };
