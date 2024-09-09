@@ -29,7 +29,12 @@
   color: var(--Curious-Blue-50, #f0f9ff);
   font-family: Poppins;
 }
-.editbutton:hover .printbutton:hover {
+.editbutton:hover {
+  background: var(--Curious-Blue-950, #1f5878) !important;
+  color: var(--Curious-Blue-50, rgb(237, 235, 235)) !important;
+}
+
+.printbutton:hover {
   background: var(--Curious-Blue-950, #1f5878) !important;
   color: var(--Curious-Blue-50, rgb(237, 235, 235)) !important;
 }
