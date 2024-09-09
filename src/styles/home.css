@@ -7,11 +7,13 @@
   line-height: 24px; /* 75% */
   margin: 0;
   margin-bottom: 15px;
+  padding-left: 15px;
 }
 .underline {
   width: 99px;
   height: 4px;
   background: #0caceb;
+  margin-left: 15px;
 }
 .tdye {
   padding-top: 30px;
@@ -48,8 +50,10 @@
 }
 .tcwrap {
   display: grid;
-  grid-template-columns: auto auto auto auto;
+  grid-template-columns: auto auto auto;
   padding: 10px;
+  margin-left: 20px;
+  gap: 10px;
 }
 .tcard img {
   height: 40px;
