@@ -1,11 +1,7 @@
-import { Button } from "antd/es";
-import "../styles/Table.css";
-import { FloatButton } from "antd/es";
-import { QuestionCircleOutlined } from "@ant-design/icons/lib";
-import { FileAddFilled } from "@ant-design/icons/lib";
-import { PlusCircleFilled } from "@ant-design/icons/lib";
 import { PlusCircleOutlined } from "@ant-design/icons/lib";
+import { Button, FloatButton } from "antd/es";
 import { useNavigate } from "react-router-dom/dist";
+import "../styles/Table.css";
 
 const TableContainer = () => {
   const navigate = useNavigate();
@@ -38,7 +34,6 @@ const TableContainer = () => {
                 <td className="column-1">Data 1</td>
                 <td className="column-2">Data 2</td>
               </tr>
-              {/* Add more rows as needed */}
             </tbody>
           </table>
         </div>
@@ -50,7 +45,7 @@ const TableContainer = () => {
       </center>
       <FloatButton
         icon={<PlusCircleOutlined />}
-        onClick={() => console.log("onClick")}
+        onClick={() => navigate("/form")}
       />
     </>
   );

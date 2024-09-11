@@ -11,6 +11,7 @@ import Supply from "./pages/dashboard/Supply";
 import DropRejoin from "./pages/dashboard/DropRejoin";
 import Classes from "./pages/dashboard/Classes";
 import Printpage from "./components/Printpage";
+import DepartmentForm from "./pages/dashboard/DepartmentForm";
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="/supply" element={<Supply />} />
           <Route path="/drop-rejoin" element={<DropRejoin />} />
           <Route path="/classes" element={<Classes />} />
+          <Route path="/form" element={<DepartmentForm />} />
         </Route>
         <Route path="/print" element={<Printpage />} />
 
