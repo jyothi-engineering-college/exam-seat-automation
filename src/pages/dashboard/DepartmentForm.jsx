@@ -57,14 +57,7 @@ const DepartmentForm = () => {
 
     if (storedDepts) {
       setDepts(JSON.parse(storedDepts));
-    } else {
-      setDepts((prevDepts) =>
-        prevDepts.map((dept) => ({
-          ...dept,
-          options: dept.options || [],
-        }))
-      );
-    }
+    } 
 
     if (storedYear) {
       setSelectedYear(storedYear);
@@ -82,70 +75,62 @@ const DepartmentForm = () => {
     }
   }, [depts, selectedYear]);
 
-  // Check if all department options are not null
-  const allOptionsSet = depts.every((dept) => dept.options !== null);
-
   return (
     <>
-      {allOptionsSet ? (
-        <Form
-          form={form}
-          name="basic"
-          style={{ maxWidth: 600 }}
-          autoComplete="on"
+      <Form
+        form={form}
+        name="basic"
+        style={{ maxWidth: 600 }}
+        autoComplete="on"
+      >
+        <Form.Item
+          label="Select Year"
+          name="Year"
+          initialValue={selectedYear}
+          rules={[{ required: true, message: "Please select the Year!" }]}
         >
-          <Form.Item
-            label="Select Year"
-            name="Year"
-            initialValue={selectedYear}
-            rules={[{ required: true, message: "Please select the Year!" }]}
-          >
-            <Select
-              style={{ width: 120 }}
-              onChange={years}
-              options={[
-                { value: "first_years", label: "First Year" },
-                { value: "second_years", label: "Second Year" },
-                { value: "third_years", label: "Third Year" },
-                { value: "fourth_years", label: "Fourth Year" },
-              ]}
-            />
-          </Form.Item>
+          <Select
+            style={{ width: 120 }}
+            onChange={years}
+            options={[
+              { value: "first_years", label: "First Year" },
+              { value: "second_years", label: "Second Year" },
+              { value: "third_years", label: "Third Year" },
+              { value: "fourth_years", label: "Fourth Year" },
+            ]}
+          />
+        </Form.Item>
 
-          {depts.map((dept, i) => (
-            <div key={i}>
-              <Form.Item
-                label={dept.name}
-                name={dept.name}
-                initialValue={dept.options}
-              >
-                <Select
-                  mode="tags"
-                  style={{ width: "100%" }}
-                  placeholder={`Add Exams for ${dept.name}`}
-                  onChange={(value) => handleChange(value, dept.name)}
-                  options={dept.options.map((exam) => ({
-                    value: exam,
-                    label: exam,
-                  }))}
-                />
-              </Form.Item>
-              <br />
-            </div>
-          ))}
+        {depts.map((dept, i) => (
+          <div key={i}>
+            <Form.Item
+              label={dept.name}
+              name={dept.name}
+              initialValue={dept.options}
+            >
+              <Select
+                mode="tags"
+                style={{ width: "100%" }}
+                placeholder={`Add Exams for ${dept.name}`}
+                onChange={(value) => handleChange(value, dept.name)}
+                options={dept.options.map((exam) => ({
+                  value: exam,
+                  label: exam,
+                }))}
+              />
+            </Form.Item>
+            <br />
+          </div>
+        ))}
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      ) : (
-        <p>Loading departments...</p>
-      )}
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
+        </Form.Item>
+      </Form>
     </>
   );
 };
 
 export default DepartmentForm;
-
