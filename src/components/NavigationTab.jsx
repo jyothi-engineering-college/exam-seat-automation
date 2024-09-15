@@ -9,26 +9,37 @@ const NavigationTab = () => {
     <center>
       <Segmented
         className="navigationTab"
-        options={["Home", "Slots","Departments","Supply","Dropout/Rejoin","Classes"]}
+        options={[
+          "Home",
+          "Slots",
+          "Batches",
+          "Subjects",
+          "Dropout/Rejoin",
+          "Exam Hall",
+        ]}
         onChange={(value) => {
-          switch(value){
+          switch (value) {
             case "Home":
               navigate("/");
               break;
             case "Slots":
+              console.log("Slots");
               navigate("/slots");
               break;
-            case "Departments":
-              navigate("/departments");
+            case "Batches":
+              navigate("/batches");
               break;
-            case "Supply":
-              navigate("/supply");
+            case "Subjects":
+              navigate("/subjects");
               break;
+            // case "Supply":
+            //   navigate("/supply");
+            //   break;
             case "Dropout/Rejoin":
               navigate("/drop-rejoin");
               break;
-            case "Classes":
-              navigate("/classes");
+            case "ExamHalls":
+              navigate("/exam-halls");
               break;
           }
         }}

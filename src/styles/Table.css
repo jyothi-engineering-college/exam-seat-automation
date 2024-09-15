@@ -7,10 +7,10 @@
   border: 1px solid rgba(7, 49, 74, 0.14); /* Outer border */
   border-radius: 10px; /* Adjust this for the desired curve */
   box-shadow: 0 4px 8px rgba(12, 81, 102, 0.1); /* Add drop shadow */
-  max-height: 400px; /* Adjust this height as needed */
   overflow: hidden; /* Hide overflow to manage scrolling separately */
   display: flex;
   flex-direction: column;
+  
 }
 
 .header-container {
@@ -18,20 +18,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-}
-.editbutton {
-  border-radius: 7px;
-  background: var(--Curious-Blue-950, #07314a);
-  box-shadow: 0px 4px 8.3px 0px rgba(7, 49, 74, 0.25);
-  padding: 10px 30px;
-  justify-content: center;
-  align-items: center;
-  color: var(--Curious-Blue-50, #f0f9ff);
-  font-family: Poppins;
-}
-.editbutton:hover {
-  background: var(--Curious-Blue-950, #1f5878) !important;
-  color: var(--Curious-Blue-50, rgb(237, 235, 235)) !important;
 }
 
 .printbutton:hover {
@@ -51,68 +37,11 @@
   font-family: Poppins;
 }
 
-.heading-left {
-  margin: 0;
-}
-
-.action-button {
-  padding: 8px 16px;
-  font-size: 14px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.action-button:hover {
-  background-color: #0056b3;
-}
-
-.table-wrapper {
-  overflow-x: auto; /* Enable horizontal scrolling */
-  width: 100%;
-}
-
 .my-table {
   width: 100%; /* Ensure the table takes the full width of the container */
   border-collapse: separate;
   border-spacing: 0; /* Ensure no gaps between cells */
   table-layout: fixed; /* Ensure columns stay within their defined width */
+  
 }
 
-th,
-td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid rgba(7, 49, 74, 0.14);
-  border-right: 1px solid rgba(7, 49, 74, 0.14);
-  white-space: nowrap; /* Prevent text from wrapping */
-}
-
-th {
-  background-color: #e1f3ff;
-  text-align: left;
-}
-
-th:first-child,
-td:first-child {
-  border-left: 1px solid rgba(7, 49, 74, 0.14); /* Add left border for the first column */
-}
-
-.my-table th:last-child,
-.my-table td:last-child {
-  border-right: none;
-}
-
-.my-table tr:last-child td {
-  border-bottom: none;
-}
-
-.column-1 {
-  width: 150px; /* Adjust column width as needed */
-}
-
-.column-2 {
-  width: 150px; /* Adjust column width as needed */
-}

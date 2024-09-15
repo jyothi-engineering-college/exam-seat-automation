@@ -1,8 +1,7 @@
 import TableContainer from '../../components/TableContainer';
 
-const Classes = () => {
+const ExamHalls = () => {
   return <TableContainer />;
+};
 
-}
-
-export default Classes
+export default ExamHalls

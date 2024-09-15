@@ -3,9 +3,8 @@ import TableContainer from "../../components/TableContainer";
 import { ConfigProvider } from "antd";
 import { Space } from "antd";
 import { message } from "antd";
-import { useEffect } from "react";
 
-const Departments = () => {
+const Batches = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const yearChanged = (date) => {      
       messageApi.open({
@@ -41,4 +40,4 @@ const Departments = () => {
   );
 };
 
-export default Departments;
+export default Batches;

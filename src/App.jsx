@@ -1,17 +1,17 @@
-import Fallback from "./components/Fallback";
-import Login from "./pages/Login";
-import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./pages/ProtectedRoute";
-import Sharedlayout from "./pages/dashboard/SharedLayout";
-import Home from "./pages/dashboard/Home";
-import Slots from "./pages/dashboard/Slots";
-import Departments from "./pages/dashboard/Departments";
-import Supply from "./pages/dashboard/Supply";
-import DropRejoin from "./pages/dashboard/DropRejoin";
-import Classes from "./pages/dashboard/Classes";
+import "./App.css";
+import Fallback from "./components/Fallback";
 import Printpage from "./components/Printpage";
+import Login from "./pages/Login";
+import ProtectedRoute from "./pages/ProtectedRoute";
 import DepartmentForm from "./pages/dashboard/DepartmentForm";
+import DropRejoin from "./pages/dashboard/DropRejoin";
+import ExamHalls from "./pages/dashboard/ExamHalls";
+import Home from "./pages/dashboard/Home";
+import Sharedlayout from "./pages/dashboard/SharedLayout";
+import Slots from "./pages/dashboard/Slots";
+import Batches from "./pages/dashboard/Batches";
+import Subjects from "./pages/dashboard/Subjects";
 
 const App = () => {
   return (
@@ -27,10 +27,12 @@ const App = () => {
         >
           <Route index element={<Home />} />
           <Route path="/slots" element={<Slots />} />
-          <Route path="/departments" element={<Departments />} />
-          <Route path="/supply" element={<Supply />} />
+          <Route path="/batches" element={<Batches />} />
+          <Route path="/subjects" element={<Subjects />} />
+
+          {/* <Route path="/supply" element={<Supply />} /> */}
           <Route path="/drop-rejoin" element={<DropRejoin />} />
-          <Route path="/classes" element={<Classes />} />
+          <Route path="/exam-halls" element={<ExamHalls />} />
           <Route path="/form" element={<DepartmentForm />} />
         </Route>
         <Route path="/print" element={<Printpage />} />
