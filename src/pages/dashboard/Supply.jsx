@@ -1,8 +1,9 @@
-import TableContainer from '../../components/TableContainer';
+import React from 'react'
 
 const Supply = () => {
-  return <TableContainer />;
-  
+  return (
+    <div>Supply</div>
+  )
 }
 
 export default Supply

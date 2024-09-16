@@ -4,14 +4,15 @@ import Fallback from "./components/Fallback";
 import Printpage from "./components/Printpage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./pages/ProtectedRoute";
-import DepartmentForm from "./pages/dashboard/DepartmentForm";
+import AddForm from "./pages/dashboard/AddForm";
+import Batches from "./pages/dashboard/Batches";
 import DropRejoin from "./pages/dashboard/DropRejoin";
 import ExamHalls from "./pages/dashboard/ExamHalls";
 import Home from "./pages/dashboard/Home";
 import Sharedlayout from "./pages/dashboard/SharedLayout";
 import Slots from "./pages/dashboard/Slots";
-import Batches from "./pages/dashboard/Batches";
 import Subjects from "./pages/dashboard/Subjects";
+import EditForm from "./pages/dashboard/EditForm";
 
 const App = () => {
   return (
@@ -33,7 +34,8 @@ const App = () => {
           {/* <Route path="/supply" element={<Supply />} /> */}
           <Route path="/drop-rejoin" element={<DropRejoin />} />
           <Route path="/exam-halls" element={<ExamHalls />} />
-          <Route path="/form" element={<DepartmentForm />} />
+          <Route path="/addform" element={<AddForm />} />
+          <Route path="/editform" element={<EditForm />} />
         </Route>
         <Route path="/print" element={<Printpage />} />
 

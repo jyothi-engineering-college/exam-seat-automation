@@ -1,41 +1,33 @@
-import { Button, DatePicker } from "antd";
-import TableContainer from "../../components/TableContainer";
-import { ConfigProvider } from "antd";
-import { Space } from "antd";
-import { message } from "antd";
+import "../../styles/Table.css";
+import BatchesTable from "../../components/BatchesTable";
+import { Button, FloatButton } from "antd";
+import { PlusCircleOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const Batches = () => {
-  const [messageApi, contextHolder] = message.useMessage();
-  const yearChanged = (date) => {      
-      messageApi.open({
-        type: "success",
-        content: `Academic year changed to ${date.$y}`,
-      });
-    };
+  const navigate = useNavigate();
+
+  const printPage = () => {
+    navigate("/print");
+  };
+
+  const handleFloatButtonClick = () => {
+    navigate("/addform?destination=batchestable");
+  };
 
   return (
     <>
-      <div className="academicYear">
-        <p>Select Academic year</p>
-        <ConfigProvider
-          theme={{
-            token: {
-              colorText: "#07314a",
-              fontWeightStrong: 800,
-              colorPrimary: "#07314a",
-              colorBgContainer: "#f0f9ff",
-              colorBgElevated: "#f0f9ff",
-            },
-          }}
-        >
-          <Space>
-            {contextHolder}
-
-            <DatePicker onChange={yearChanged} picker="year" />
-          </Space>
-        </ConfigProvider>
-      </div>
-      <TableContainer />
+      <BatchesTable />
+      <center>
+        <Button onClick={printPage} className="printbutton">
+          PRINT
+        </Button>
+      </center>
+      <FloatButton
+        tooltip={<div>Add</div>}
+        icon={<PlusCircleOutlined />}
+        onClick={handleFloatButtonClick}
+      />
     </>
   );
 };

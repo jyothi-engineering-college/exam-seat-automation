@@ -1,8 +1,9 @@
-import TableContainer from '../../components/TableContainer';
+import React from 'react'
 
 const DropRejoin = () => {
-  return <TableContainer />;
-
+  return (
+    <div>DropRejoin</div>
+  )
 }
 
-export default DropRejoin;
+export default DropRejoin
