@@ -23,6 +23,7 @@ import {
   where,
 } from "firebase/firestore";
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 
 const firestore = getFirestore();
 
@@ -183,12 +184,116 @@ const AppProvider = ({ children }) => {
         const examsData = examsDocSnap.data();
         console.log(examsData);
       }
-      
+
       await updateDoc(docRef, { year });
       return year;
     } catch (error) {
       console.error("Error fetching document: ", error);
       throw new Error(`${error.message}`);
+    }
+  };
+  const uploadSubFile = async (workbook, updateProgress, cancelToken) => {
+    try {
+      const expectedHeaders = [
+        "DEPT",
+        "SEM",
+        "SLOT",
+        "COURSE CODE",
+        "COURSE NAME",
+        "L",
+        "T",
+        "P",
+        "HOURS",
+        "CREDIT",
+      ];
+
+      const validateHeaders = (headers) => {
+        // Check if headers are exactly the same and in the same order
+        return JSON.stringify(headers) === JSON.stringify(expectedHeaders);
+      };
+
+      if (!workbook) {
+        throw new Error("Wrong Format !");
+      }
+
+      const sheetNames = workbook.SheetNames;
+
+      const unwantedSheetNames = ["Combined", "Copy of Combined", "LAB"];
+      const validSheetNames = sheetNames.filter(
+        (name) =>
+          !unwantedSheetNames.some((unwantedName) =>
+            name.includes(unwantedName)
+          )
+      );
+
+      const totalSheets = validSheetNames.length;
+      let processedSheets = 0;
+
+      const totalItems = validSheetNames.reduce((sum, sheetName) => {
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Get raw data with headers
+        return sum + data.length;
+      }, 0);
+
+      let processedItems = 0;
+
+      for (const sheetName of validSheetNames) {
+        if (cancelToken.current === false) break;
+
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Get raw data with headers
+        // console.log(`Processing sheet: ${sheetName}`, data);
+
+        const headers = data[0]; // Extract headers from the first row
+        console.log(headers);
+
+        if (!validateHeaders(headers)) {
+          throw new Error("Invalid headers in the sheet!");
+        }
+
+        const subjectsCollection = collection(db, "Subjects");
+
+        for (const row of data.slice(1)) {
+          // Skip header row
+          if (cancelToken.current === false) break;
+
+          const item = {};
+          headers.forEach((header, index) => {
+            item[header] = row[index];
+          });
+
+          const courseCode = item["COURSE CODE"];
+          if (courseCode) {
+            try {
+              // await setDoc(doc(subjectsCollection, courseCode), item);
+              processedItems += 1;
+
+              const percent = Math.round((processedItems / totalItems) * 100);
+              updateProgress(percent);
+            } catch (docError) {
+              throw new Error(
+                `Error uploading document for COURSE CODE: ${courseCode}`,
+                docError.message
+              );
+            }
+          }
+        }
+
+        processedSheets += 1;
+        const percent = Math.round((processedSheets / totalSheets) * 100);
+        updateProgress(percent);
+      }
+
+      if (cancelToken.current !== false) {
+        console.log("All valid sheets processed!");
+        updateProgress(100);
+      } else {
+        throw new Error("Upload Cancelled !");
+      }
+    } catch (error) {
+      updateProgress(0);
+
+      throw new Error("The file is not in the correct format!");
     }
   };
 
@@ -203,6 +308,7 @@ const AppProvider = ({ children }) => {
         fetchBatches,
         fetchAcademicYear,
         updateAcademicYear,
+        uploadSubFile,
       }}
     >
       {children}
