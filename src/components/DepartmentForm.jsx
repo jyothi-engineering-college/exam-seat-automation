@@ -1,25 +1,34 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Select, Form } from "antd";
+import { Button, Select, Form, message, Popconfirm } from "antd";
+import { useAppContext } from "../context/AppContext";
+import { QuestionCircleOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const DepartmentForm = () => {
-  const [depts, setDepts] = useState([
-    { name: "CE", options: [] },
-    { name: "CS", options: [] },
-    { name: "ME", options: [] },
-    { name: "AD", options: [] },
-    { name: "EE", options: [] },
-    { name: "EC", options: [] },
-    { name: "CC", options: [] },
-    { name: "MC", options: [] },
-  ]);
+  const navigate = useNavigate();
+  const { examForm } = useAppContext();
+  const [messageApi, contextHolder] = message.useMessage();
+  const initialState = {
+    depts: [
+      { name: "CE", options: [] },
+      { name: "CS", options: [] },
+      { name: "ME", options: [] },
+      { name: "AD", options: [] },
+      { name: "EE", options: [] },
+      { name: "EC", options: [] },
+      { name: "CC", options: [] },
+      { name: "MC", options: [] },
+    ],
+    year: "first_years",
+  };
 
-  const [selectedYear, setSelectedYear] = useState("first_years");
-
+  const [depts, setDepts] = useState(initialState.depts);
+  const [selectedYear, setSelectedYear] = useState(initialState.year);
   const hasLoaded = useRef(false);
   const [form] = Form.useForm();
 
   const years = (value) => {
-    const currentYear = 2024 % 100; // academic year
+    const currentYear = 2024 % 100;
     setSelectedYear(value);
 
     setDepts((prevDepts) =>
@@ -51,18 +60,46 @@ const DepartmentForm = () => {
     );
   };
 
+  const submitForm = async () => {
+    const key = "updatable";
+    messageApi.open({
+      key,
+      type: "loading",
+      content: "Submitting form...",
+    });
+
+    try {
+      const status = await examForm(depts);
+      messageApi.success({
+        key,
+        content: status,
+        duration: 0.50,
+      });
+      localStorage.removeItem("depts");
+      localStorage.removeItem("selectedYear");
+      setDepts(initialState.depts);
+      setSelectedYear(initialState.year);
+      form.resetFields();
+      setTimeout(() => navigate("/batches"), 600);
+    } catch (error) {
+      messageApi.error({
+        key,
+        content: error.message, // Use error.message to get the error text
+      });
+    }
+  };
   useEffect(() => {
     const storedDepts = localStorage.getItem("depts");
     const storedYear = localStorage.getItem("selectedYear");
 
     if (storedDepts) {
       setDepts(JSON.parse(storedDepts));
-    } 
+    }
 
     if (storedYear) {
       setSelectedYear(storedYear);
-      years(storedYear); // Initialize departments based on the stored year
-      form.setFieldsValue({ Year: storedYear }); // Set form value
+      years(storedYear);
+      form.setFieldsValue({ Year: storedYear });
     }
   }, [form]);
 
@@ -77,6 +114,7 @@ const DepartmentForm = () => {
 
   return (
     <>
+      {contextHolder}
       <Form
         form={form}
         name="basic"
@@ -124,9 +162,16 @@ const DepartmentForm = () => {
         ))}
 
         <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
+          <Popconfirm
+            onConfirm={submitForm}
+            title="Current year exams data will be overwritten !"
+            description="Are you sure you want to submit?"
+            icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+          >
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Popconfirm>
         </Form.Item>
       </Form>
     </>

@@ -1,7 +1,9 @@
-import TableContainer from '../../components/TableContainer';
+import React from 'react'
 
 const Slots = () => {
-  return <TableContainer />;
+  return (
+    <div>Slots</div>
+  )
 }
 
 export default Slots

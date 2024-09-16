@@ -14,11 +14,17 @@ import { createUserWithEmailAndPassword } from "@firebase/auth";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
+  getFirestore,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
+import dayjs from "dayjs";
+
+const firestore = getFirestore();
 
 const user = localStorage.getItem("user");
 
@@ -79,12 +85,12 @@ const AppProvider = ({ children }) => {
 
         const usersCollection = collection(db, "users");
         const q = query(usersCollection, where("email", "==", userEmail));
-        const querySnapshot = await getDocs(q);        
+        const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           querySnapshot.forEach((doc) => {
             const { username, email } = doc.data();
             user = { username, email };
-          }); 
+          });
         }
       }
       dispatch({
@@ -93,7 +99,7 @@ const AppProvider = ({ children }) => {
       });
       addUserToLocalStorage({ user });
     } catch (error) {
-       const errormsg = error.message.split("/")[1];
+      const errormsg = error.message.split("/")[1];
       dispatch({
         type: SETUP_USER_ERROR,
       });
@@ -103,9 +109,87 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const logoutUser = () => {    
+  const logoutUser = () => {
     dispatch({ type: LOGOUT_USER });
     removeUserFromTheLocalStorage();
+  };
+
+  const examForm = async (depts) => {
+    const docRef = doc(firestore, "DeptDetails", "Exams");
+
+    const updatedFields = depts.reduce(
+      (acc, dept) => ({
+        ...acc,
+        [dept.name]: dept.options,
+      }),
+      {}
+    );
+
+    try {
+      await updateDoc(docRef, updatedFields);
+      return "Form Submitted!";
+    } catch (error) {
+      throw new Error(`${error.message}`);
+    }
+  };
+
+  const fetchBatches = async () => {
+    const docRef = doc(firestore, "DeptDetails", "Exams");
+
+    try {
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+
+        const formattedData = Object.keys(data).map((deptName) => ({
+          deptName,
+          subjects: data[deptName],
+        }));
+
+        return formattedData;
+      } else {
+        console.log("No such document!");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      return [];
+    }
+  };
+  const fetchAcademicYear = async () => {
+    const docRef = doc(firestore, "DeptDetails", "AcademicYear");
+    try {
+      let year = dayjs().year();
+      const docSnap = await getDoc(docRef);
+      if (docSnap.data().year !== undefined) {
+        year = docSnap.data().year;
+      } else {
+        await setDoc(docRef, { year });
+      }
+      return year;
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      return [];
+    }
+  };
+  const updateAcademicYear = async (year) => {
+    const docRef = doc(firestore, "DeptDetails", "AcademicYear");
+
+    try {
+      const examsDocRef = doc(db, "DeptDetails", "Exams");
+      const examsDocSnap = await getDoc(examsDocRef);
+
+      if (examsDocSnap.exists()) {
+        const examsData = examsDocSnap.data();
+        console.log(examsData);
+      }
+      
+      await updateDoc(docRef, { year });
+      return year;
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      throw new Error(`${error.message}`);
+    }
   };
 
   return (
@@ -115,6 +199,10 @@ const AppProvider = ({ children }) => {
         displayAlert,
         setupUser,
         logoutUser,
+        examForm,
+        fetchBatches,
+        fetchAcademicYear,
+        updateAcademicYear,
       }}
     >
       {children}

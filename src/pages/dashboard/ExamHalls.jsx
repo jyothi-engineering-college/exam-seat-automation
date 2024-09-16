@@ -1,7 +1,9 @@
-import TableContainer from '../../components/TableContainer';
+import React from 'react'
 
 const ExamHalls = () => {
-  return <TableContainer />;
-};
+  return (
+    <div>ExamHalls</div>
+  )
+}
 
 export default ExamHalls
