@@ -9,6 +9,7 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import DataTable, { createTheme } from "react-data-table-component";
+import { filteredData } from "../utils/dataSearch";
 import { useAppContext } from "../context/AppContext";
 
 createTheme("custom", {
@@ -63,6 +64,8 @@ const BatchesTable = () => {
     });
   }, [fetchAcademicYear]);
 
+  const filteredResults = filteredData(data, searchTerm);
+
   const columns = [
     {
       name: "Name",
@@ -77,15 +80,6 @@ const BatchesTable = () => {
       wrap: true,
     },
   ];
-
-  const filteredData = data.filter((item) => {
-    const concatenatedValues = Object.values(item).join(" ").toLowerCase();
-    const searchWords = searchTerm.toLowerCase().split(" ");
-
-    return searchWords.every((searchWord) =>
-      concatenatedValues.includes(searchWord)
-    );
-  });
 
   const disabledDate = (currentDate) => {
     const currentYear = dayjs().year();
@@ -106,7 +100,7 @@ const BatchesTable = () => {
     } catch (error) {
       messageApi.open({
         type: "error",
-        content: `Failed to change academic year: ${error.message}`, // Show error message if update fails
+        content: `Failed to change academic year: ${error.message}`, 
       });
     }
   };
@@ -122,7 +116,6 @@ const BatchesTable = () => {
             </center>
           </div>
 
-          {/* Manually set value in DatePicker */}
           <ConfigProvider
             theme={{
               token: {
@@ -138,14 +131,13 @@ const BatchesTable = () => {
                 size="large"
                 placeholder="Select Academic Year"
                 disabledDate={disabledDate}
-                value={year} // Set the value manually
+                value={year} 
                 onChange={yearChanged}
                 picker="year"
               />
             </Space>
           </ConfigProvider>
 
-          {/* Search input */}
           <div className="search-container">
             <Input
               size="large"
@@ -160,7 +152,7 @@ const BatchesTable = () => {
           <div className="my-table">
             <DataTable
               columns={columns}
-              data={filteredData}
+              data={filteredResults}
               defaultSortAsc={true}
               pagination
               paginationPerPage={30}

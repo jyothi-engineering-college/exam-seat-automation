@@ -297,6 +297,23 @@ const AppProvider = ({ children }) => {
     }
   };
 
+  const fetchSubjects = async () => {
+    const subjectsCollection = collection(db, "Subjects");
+
+    try {
+      const querySnapshot = await getDocs(subjectsCollection);
+      const subjects = [];
+      querySnapshot.forEach((doc) => {
+        subjects.push(doc.data());
+      });
+      
+      return subjects;
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      return [];
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -309,6 +326,7 @@ const AppProvider = ({ children }) => {
         fetchAcademicYear,
         updateAcademicYear,
         uploadSubFile,
+        fetchSubjects,
       }}
     >
       {children}
