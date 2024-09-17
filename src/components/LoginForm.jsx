@@ -5,8 +5,6 @@ import { Button, Form, Input } from "antd";
 import { useAppContext } from "../context/AppContext";
 import { useEffect } from "react";
 import FlexContainer from "./FlexContainer";
-import { Alert } from "antd";
-
 
 const initialState = {
   username: "",
@@ -30,9 +28,7 @@ const LoginForm = () => {
   const {
     user,
     isLoading,
-    showAlert,
     setupUser,
-    alertText,
   } = useAppContext();
 
   const handleChange = (e) => {
@@ -142,7 +138,6 @@ const LoginForm = () => {
             </Button>
           </Form.Item>
 
-          {showAlert &&  <Alert message={alertText} type="error" />}
 
           <FlexContainer>
             {values.isMember ? "Not a member yet ? " : "Already a member ? "}

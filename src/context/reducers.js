@@ -1,6 +1,4 @@
 import {
-  CLEAR_ALERT,
-  DISPLAY_ALERT,
   LOGOUT_USER,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
@@ -9,19 +7,6 @@ import {
 import { initialState } from "./AppContext";
 const reducer = (state, action) => {
   switch (action.type) {
-    case DISPLAY_ALERT:
-      return {
-        ...state,
-        showAlert: true,
-        alertText: action.payload.msg,
-      };
-
-    case CLEAR_ALERT:
-      return {
-        ...state,
-        showAlert: false,
-        alertText: "",
-      };
 
     case SETUP_USER_BEGIN:
       return { ...state, isLoading: true };
@@ -42,7 +27,6 @@ const reducer = (state, action) => {
       return {
         ...initialState,
         user: null,
-    
       };
 
     default:

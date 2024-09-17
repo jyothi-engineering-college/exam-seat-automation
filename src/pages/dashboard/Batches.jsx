@@ -12,7 +12,7 @@ const Batches = () => {
   };
 
   const handleFloatButtonClick = () => {
-    navigate("/addform?destination=batchestable");
+    navigate("/addform?destination=batchesform");
   };
 
   return (

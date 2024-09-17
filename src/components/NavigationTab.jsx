@@ -15,7 +15,7 @@ const NavigationTab = () => {
           "Batches",
           "Subjects",
           "Dropout/Rejoin",
-          "Exam Hall",
+          "Exam Halls",
         ]}
         onChange={(value) => {
           switch (value) {
@@ -38,7 +38,7 @@ const NavigationTab = () => {
             case "Dropout/Rejoin":
               navigate("/drop-rejoin");
               break;
-            case "ExamHalls":
+            case "Exam Halls":
               navigate("/exam-halls");
               break;
           }
