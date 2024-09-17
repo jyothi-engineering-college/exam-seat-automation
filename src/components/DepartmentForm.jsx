@@ -22,7 +22,7 @@ const DepartmentForm = () => {
   };
 
   const [depts, setDepts] = useState(initialState.depts);
-  const [selectedYear, setSelectedYear] = useState(initialState.year);
+  const [selectedYear, setSelectedYear] = useState(null);
   const hasLoaded = useRef(false);
   const [form] = Form.useForm();
   const calculateYear = (value, dept, currentYear) => {
@@ -76,6 +76,7 @@ const DepartmentForm = () => {
 
   const submitForm = async () => {
     try {
+      
       await examForm(depts);
 
       localStorage.removeItem("depts");
@@ -178,6 +179,7 @@ const DepartmentForm = () => {
         >
           <Select
             style={{ width: 120 }}
+            placeholder="Select Year"
             onChange={years}
             options={[
               { value: "first_years", label: "First Year" },

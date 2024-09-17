@@ -1,56 +1,39 @@
+import { EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
 
-
-const SlotsTable = () => {
-  const { fetchSlots } = useAppContext();
+const ExamHallTable = () => {
+  const { fetchExamHalls } = useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchSlots().then((data) => {      
+    fetchExamHalls().then((data) => {
       setData(data);
     });
-  }, [fetchSlots]);
+  }, [fetchExamHalls]);
 
   const filteredResults = filteredData(data, searchTerm);
 
   const columns = [
     {
-      name: "Slot",
-      selector: (row) => row.Slot,
+      name: "Exam Halls",
+      selector: (row) => row.Hall,
       sortable: true,
       wrap: true,
     },
     {
-      name: "Exams",
-      selector: (row) => row.Exams.join(" | "),
+      name: "Capacity",
+      selector: (row) => row.Capacity,
       sortable: true,
       wrap: true,
     },
-    {
-      name: "Date",
-      selector: (row) => "",
-      sortable: true,
-      wrap: true,
-    },
-    {
-      name: "Time",
-      selector: (row) => "",
-      sortable: true,
-      wrap: true,
-    },
+   
   ];
-  let props = {
-    tableName: "Slots",
-    columns,
-    filteredResults,
-    searchTerm,
-    setSearchTerm,
-  };
+  let props = { tableName:"Exam Halls",columns, filteredResults, searchTerm, setSearchTerm };
 
   return (
     <>
@@ -59,4 +42,4 @@ const SlotsTable = () => {
   );
 };
 
-export default SlotsTable;
+export default ExamHallTable;

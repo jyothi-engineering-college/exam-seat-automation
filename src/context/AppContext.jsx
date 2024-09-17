@@ -112,7 +112,7 @@ const AppProvider = ({ children }) => {
     const updatedFields = depts.reduce(
       (acc, dept) => ({
         ...acc,
-        [dept.name]: dept.options,
+        [dept.name]: dept.initialValues,
       }),
       {}
     );
@@ -321,6 +321,119 @@ const AppProvider = ({ children }) => {
       showAlert("error", error.message);
     }
   };
+
+  const uploadExamhallFile = async (workbook, updateProgress, cancelToken) => {
+    try {
+      const expectedHeaders = [
+        "Semester",
+        "Classroom",
+        "No:of desks",
+        "Department",
+      ];
+
+      const validateHeaders = (headers) =>
+        JSON.stringify(headers) === JSON.stringify(expectedHeaders);
+
+      if (!workbook) {
+        showAlert("error", "No Workbook Found!");
+        return;
+      }
+
+      const sheetNames = workbook.SheetNames;
+      const unwantedSheetNames = ["Combined", "Copy of Combined"];
+      const validSheetNames = sheetNames.filter(
+        (name) =>
+          !unwantedSheetNames.some((unwantedName) =>
+            name.includes(unwantedName)
+          )
+      );
+
+      if (validSheetNames.length === 0) {
+        showAlert("error", "No valid sheets found!");
+        return;
+      }
+
+      let totalItems = 0;
+      validSheetNames.forEach((sheetName) => {
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        totalItems += data.slice(1).filter((row) => row.length > 0).length;
+      });
+
+      let processedItems = 0;
+      let classesData = {}; // To accumulate classroom data
+
+      // Function to find optimal rows and columns array based on the number of desks
+      const findRowsAndColumns = (desks) => {
+        let rows = Math.floor(Math.sqrt(desks)); // Start with the square root for balanced layout
+        let columns = Math.ceil(desks / rows);
+
+        // Adjust rows and columns to make sure they don't exceed desks and are closest
+        while (rows * columns > desks) {
+          rows--;
+          columns = Math.ceil(desks / rows);
+        }
+
+        // Ensure rows are always greater than or equal to columns
+        if (rows < columns) {
+          [rows, columns] = [columns, rows]; // Swap rows and columns
+        }
+
+        return [rows, columns];
+      };
+
+      for (const sheetName of validSheetNames) {
+        if (!cancelToken.current) break; // Check for cancellation
+
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const headers = data[0];
+
+        if (!validateHeaders(headers)) {
+          showAlert("error", `Invalid headers in sheet ${sheetName}`);
+          return;
+        }
+
+        data.slice(1).forEach((row) => {
+          if (row.length === 0) return; // Skip empty rows
+          if (!cancelToken.current) return; // Check for cancellation
+
+          const item = {};
+          headers.forEach((header, index) => {
+            item[header] = row[index] ? String(row[index]).trim() : "";
+          });
+
+          const classroom = item["Classroom"];
+          const desks = parseInt(item["No:of desks"], 10);
+
+          if (classroom && desks) {
+            const [rows, columns] = findRowsAndColumns(desks); // Get optimal rows and columns array
+            classesData[classroom] = [rows, columns]; // Store as an array of [rows, columns]
+
+            processedItems++;
+            const percent = Math.round((processedItems / totalItems) * 100);
+            updateProgress(percent);
+          }
+        });
+      }
+
+      // Upload the accumulated classes data to Firebase
+      const classesDocRef = doc(db, "Classes", "AvailableClasses");
+      await setDoc(classesDocRef, classesData, { merge: true });
+
+      if (cancelToken.current) {
+        showAlert("success", "Classroom and desk data updated!");
+        updateProgress(100);
+      } else {
+        showAlert("warning", "Upload Cancelled!");
+      }
+    } catch (error) {
+      console.error(error);
+      updateProgress(0);
+      showAlert("error", error.message);
+    }
+  };
+
   const fetchSubjects = async () => {
     const subjectsCollection = collection(db, "Subjects");
 
@@ -377,11 +490,10 @@ const AppProvider = ({ children }) => {
 
       if (docSnap.exists()) {
         const docData = docSnap.data();
-        const transformedData = Object.keys(docData).map((key) => ({
-          Slot: key,
-          Exams: docData[key],
-        }));
-        return transformedData;
+        const sortedData = Object.keys(docData)
+          .map((key) => ({ Slot: key, Exams: docData[key] }))
+          .sort((a, b) => a.Slot.localeCompare(b.Slot));
+        return sortedData;
       } else {
         console.log("No such document!");
         return {};
@@ -389,6 +501,32 @@ const AppProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching document: ", error);
       return {};
+    }
+  };
+
+  const fetchExamHalls = async () => {
+    const slotsDocRef = doc(db, "Classes", "AvailableClasses");
+
+    try {
+      const docSnap = await getDoc(slotsDocRef);
+
+      if (docSnap.exists()) {
+        const docData = docSnap.data();
+        const sortedData = Object.keys(docData)
+          .map((key) => {
+            const [rows, columns] = docData[key]; // Destructure rows and columns from array
+            const totalCapacity = rows * columns; // Calculate total capacity
+            return { Hall: key, Capacity: totalCapacity }; // Return with calculated capacity
+          })
+          .sort((a, b) => a.Hall.localeCompare(b.Hall)); // Sort based on hall name (fixed the sort key)
+        return sortedData;
+      } else {
+        console.log("No such document!");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      return [];
     }
   };
 
@@ -407,6 +545,8 @@ const AppProvider = ({ children }) => {
         fetchSubjects,
         fetchExamOptions,
         fetchSlots,
+        uploadExamhallFile,
+        fetchExamHalls,
       }}
     >
       {contextHolder}

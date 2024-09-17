@@ -6,15 +6,15 @@ import { getFirestore } from "firebase/firestore";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 //US
-// const firebaseConfig = {
-//   apiKey: "AIzaSyCZ0WIjGromYtVY-YCaObnwFDkSK7dviVQ",
-//   authDomain: "exam-seat.firebaseapp.com",
-//   projectId: "exam-seat",
-//   storageBucket: "exam-seat.appspot.com",
-//   messagingSenderId: "526070761477",
-//   appId: "1:526070761477:web:b9aeba458e5b4634f5b46c",
-//   measurementId: "G-RQ2Z20YF5X",
-// };
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ0WIjGromYtVY-YCaObnwFDkSK7dviVQ",
+  authDomain: "exam-seat.firebaseapp.com",
+  projectId: "exam-seat",
+  storageBucket: "exam-seat.appspot.com",
+  messagingSenderId: "526070761477",
+  appId: "1:526070761477:web:b9aeba458e5b4634f5b46c",
+  measurementId: "G-RQ2Z20YF5X",
+};
 
 //india
 // const firebaseConfig = {
@@ -37,14 +37,14 @@ import { getFirestore } from "firebase/firestore";
 // };
 
 //East US
-const firebaseConfig = {
-  apiKey: "AIzaSyDEZVGFD4tgO0kQRZgdZATtHt7X02WxrOQ",
-  authDomain: "exam-seat-3.firebaseapp.com",
-  projectId: "exam-seat-3",
-  storageBucket: "exam-seat-3.appspot.com",
-  messagingSenderId: "1057417337299",
-  appId: "1:1057417337299:web:9d30f35a7e2e004466b726",
-};
+// const firebaseConfig = {
+//   apiKey: "AIzaSyDEZVGFD4tgO0kQRZgdZATtHt7X02WxrOQ",
+//   authDomain: "exam-seat-3.firebaseapp.com",
+//   projectId: "exam-seat-3",
+//   storageBucket: "exam-seat-3.appspot.com",
+//   messagingSenderId: "1057417337299",
+//   appId: "1:1057417337299:web:9d30f35a7e2e004466b726",
+// };
 
 
 const app = initializeApp(firebaseConfig);

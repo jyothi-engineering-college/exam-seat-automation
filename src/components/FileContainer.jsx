@@ -4,14 +4,19 @@ import React, { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { useAppContext } from "../context/AppContext";
 import FlexContainer from "./FlexContainer";
+import { useLocation } from "react-router-dom";
+import queryString from "query-string";
 
-const SubjectForm = () => {
+const FileContainer = () => {
+  const location = useLocation();
+  const { destination } = queryString.parse(location.search);
+
   const [workbook, setWorkbook] = useState(null);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(true);
   const cancelToken = useRef(true); // Ref to manage cancellation
 
-  const { uploadSubFile } = useAppContext();
+  const { uploadSubFile, uploadExamhallFile } = useAppContext();
 
   const handleFileUpload = (file) => {
     const reader = new FileReader();
@@ -33,10 +38,15 @@ const SubjectForm = () => {
   const handleUpload = async () => {
     if (workbook) {
       setUploading(false);
-      cancelToken.current = true; // Reset cancel token
-      await uploadSubFile(workbook, updateProgress, cancelToken);
+      cancelToken.current = true; 
+      if (destination === "subjectsform")
+        await uploadSubFile(workbook, updateProgress, cancelToken);
+      else if (destination === "examhallform")
+        await uploadExamhallFile(workbook, updateProgress, cancelToken);
 
       setUploading(true);
+      console.log(destination);
+
       setProgress(0);
       setWorkbook(null);
     }
@@ -48,7 +58,7 @@ const SubjectForm = () => {
 
   return (
     <>
-      Add Subjects
+      {destination === "subjectsform" ? "Add Subjects" : "Add Exam Halls"}
       <div>
         <FlexContainer>
           <Upload
@@ -59,10 +69,18 @@ const SubjectForm = () => {
             <Button>Select Subject Workbook</Button>
           </Upload>
           &nbsp;
-          <Alert
-            message="The file should have columns of DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
-            type="info"
-          />
+          {destination === "subjectsform" ? (
+            <Alert
+              message="The file should have columns of DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
+              type="info"
+            />
+          ) : (
+            <Alert
+              message="The file should have columns of Semester	| Classroom | No:of desks | Department
+ "
+              type="info"
+            />
+          )}
         </FlexContainer>
         <Popconfirm
           onConfirm={handleUpload}
@@ -86,4 +104,4 @@ const SubjectForm = () => {
   );
 };
 
-export default SubjectForm;
+export default FileContainer;
