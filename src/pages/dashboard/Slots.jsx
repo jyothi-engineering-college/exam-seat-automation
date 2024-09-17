@@ -1,8 +1,9 @@
 import React from 'react'
+import SlotsTable from '../../components/SlotsTable'
 
 const Slots = () => {
   return (
-    <div>Slots</div>
+    <SlotsTable/>
   )
 }
 

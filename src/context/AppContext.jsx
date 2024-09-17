@@ -1,8 +1,6 @@
 import React, { useReducer, useContext, createContext } from "react";
 import reducer from "./reducers";
 import {
-  CLEAR_ALERT,
-  DISPLAY_ALERT,
   LOGOUT_USER,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
@@ -24,6 +22,7 @@ import {
 } from "firebase/firestore";
 import dayjs from "dayjs";
 import * as XLSX from "xlsx";
+import { message } from "antd";
 
 const firestore = getFirestore();
 
@@ -31,7 +30,6 @@ const user = localStorage.getItem("user");
 
 const initialState = {
   isLoading: false,
-  showAlert: false,
   alertText: "",
   user: user ? JSON.parse(user) : null,
 };
@@ -40,19 +38,10 @@ const AppContext = createContext();
 
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const displayAlert = (msg) => {
-    dispatch({
-      type: DISPLAY_ALERT,
-      payload: { msg },
-    });
-    clearAlert();
-  };
-
-  const clearAlert = () => {
-    setTimeout(() => {
-      dispatch({ type: CLEAR_ALERT });
-    }, 3000);
+  const showAlert = (type, content) => {
+    messageApi.open({ key: "same_key", type, content });
   };
 
   const addUserToLocalStorage = ({ user }) => {
@@ -64,6 +53,8 @@ const AppProvider = ({ children }) => {
   };
 
   const setupUser = async ({ currentUser, endPoint }) => {
+    showAlert("loading", "Authenticating...");
+
     const { username, email, password } = currentUser;
     let user = {};
     dispatch({ type: SETUP_USER_BEGIN });
@@ -99,14 +90,13 @@ const AppProvider = ({ children }) => {
         payload: { user },
       });
       addUserToLocalStorage({ user });
+      showAlert("success", "Login Successful!");
     } catch (error) {
       const errormsg = error.message.split("/")[1];
       dispatch({
         type: SETUP_USER_ERROR,
       });
-      displayAlert(errormsg);
-
-      clearAlert();
+      showAlert("error", errormsg);
     }
   };
 
@@ -116,6 +106,7 @@ const AppProvider = ({ children }) => {
   };
 
   const examForm = async (depts) => {
+    showAlert("loading", "Updating Batch Details ...");
     const docRef = doc(firestore, "DeptDetails", "Exams");
 
     const updatedFields = depts.reduce(
@@ -127,9 +118,10 @@ const AppProvider = ({ children }) => {
     );
 
     try {
-      await updateDoc(docRef, updatedFields);
-      return "Form Submitted!";
+      await setDoc(docRef, updatedFields, { merge: true });
+      showAlert("success", "Batch Details Updated Successfully!");
     } catch (error) {
+      showAlert("error", error.message);
       throw new Error(`${error.message}`);
     }
   };
@@ -157,13 +149,19 @@ const AppProvider = ({ children }) => {
       return [];
     }
   };
+
   const fetchAcademicYear = async () => {
     const docRef = doc(firestore, "DeptDetails", "AcademicYear");
     try {
       let year = dayjs().year();
       const docSnap = await getDoc(docRef);
-      if (docSnap.data().year !== undefined) {
-        year = docSnap.data().year;
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.year !== undefined) {
+          year = data.year;
+        } else {
+          await setDoc(docRef, { year });
+        }
       } else {
         await setDoc(docRef, { year });
       }
@@ -173,6 +171,7 @@ const AppProvider = ({ children }) => {
       return [];
     }
   };
+
   const updateAcademicYear = async (year) => {
     const docRef = doc(firestore, "DeptDetails", "AcademicYear");
 
@@ -184,14 +183,17 @@ const AppProvider = ({ children }) => {
         const examsData = examsDocSnap.data();
         console.log(examsData);
       }
+      showAlert("loading", `Updating year to ${year}`);
 
       await updateDoc(docRef, { year });
-      return year;
+      showAlert("success", `Academic year changed to ${year}`);
+      return;
     } catch (error) {
-      console.error("Error fetching document: ", error);
-      throw new Error(`${error.message}`);
+      showAlert("error", error.message);
+      throw new Error(error.message);
     }
   };
+
   const uploadSubFile = async (workbook, updateProgress, cancelToken) => {
     try {
       const expectedHeaders = [
@@ -208,16 +210,14 @@ const AppProvider = ({ children }) => {
       ];
 
       const validateHeaders = (headers) => {
-        // Check if headers are exactly the same and in the same order
         return JSON.stringify(headers) === JSON.stringify(expectedHeaders);
       };
 
       if (!workbook) {
-        throw new Error("Wrong Format !");
+        showAlert("error", "Wrong Format !");
       }
 
       const sheetNames = workbook.SheetNames;
-
       const unwantedSheetNames = ["Combined", "Copy of Combined", "LAB"];
       const validSheetNames = sheetNames.filter(
         (name) =>
@@ -226,77 +226,101 @@ const AppProvider = ({ children }) => {
           )
       );
 
-      const totalSheets = validSheetNames.length;
-      let processedSheets = 0;
+      let totalItems = 0;
 
-      const totalItems = validSheetNames.reduce((sum, sheetName) => {
+      // Calculate totalItems excluding headers and empty rows
+      validSheetNames.forEach((sheetName) => {
         const sheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Get raw data with headers
-        return sum + data.length;
-      }, 0);
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        // Subtract 1 to account for the header row, and filter out empty rows
+        totalItems += data.slice(1).filter((row) => row.length > 0).length;
+      });
+
+      console.log(totalItems);
 
       let processedItems = 0;
+      let slotsData = {}; // To accumulate slot data
 
       for (const sheetName of validSheetNames) {
         if (cancelToken.current === false) break;
 
         const sheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Get raw data with headers
-        // console.log(`Processing sheet: ${sheetName}`, data);
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Raw data with headers
+        console.log(`Processing sheet: ${sheetName}`);
 
         const headers = data[0]; // Extract headers from the first row
-        console.log(headers);
 
         if (!validateHeaders(headers)) {
-          throw new Error("Invalid headers in the sheet!");
+          showAlert("error", "Invalid Headers in the sheet !");
         }
 
-        const subjectsCollection = collection(db, "Subjects");
-
         for (const row of data.slice(1)) {
-          // Skip header row
+          if (row.length === 0) continue; // Skip empty rows
           if (cancelToken.current === false) break;
 
           const item = {};
           headers.forEach((header, index) => {
-            item[header] = row[index];
+            // Convert value to string if it exists, then trim it
+            item[header] =
+              row[index] !== undefined && row[index] !== null
+                ? String(row[index]).trim()
+                : row[index];
           });
 
+          // Extract course code and slot information for slot upload
+          let slot = item["SLOT"];
           const courseCode = item["COURSE CODE"];
-          if (courseCode) {
-            try {
-              // await setDoc(doc(subjectsCollection, courseCode), item);
-              processedItems += 1;
 
-              const percent = Math.round((processedItems / totalItems) * 100);
-              updateProgress(percent);
-            } catch (docError) {
-              throw new Error(
-                `Error uploading document for COURSE CODE: ${courseCode}`,
-                docError.message
-              );
-            }
+          if (slot && courseCode) {
+            // Trim the slot and extract only the first letter from each slot
+            const slots = slot.split(",").map((s) => s.trim().charAt(0)); // Extract first letter of each slot
+
+            slots.forEach((slot) => {
+              if (!slotsData[slot]) {
+                slotsData[slot] = [];
+              }
+              slotsData[slot].push(courseCode);
+            });
+          }
+
+          // Upload individual subject data to Firestore
+          try {
+            const subjectsCollection = collection(db, "Subjects");
+            const courseCodeDept = `${item["SEM"]}_${item["DEPT"]}_${item["COURSE CODE"]}`; // Unique document name
+
+            // If the document upload succeeds, increment processedItems
+            await setDoc(doc(subjectsCollection, courseCodeDept), item);
+            processedItems += 1;
+
+            // Calculate percentage progress and update
+            const percent = Math.round((processedItems / totalItems) * 100);
+            updateProgress(percent);
+          } catch (docError) {
+            showAlert(
+              "error",
+              `Error uploading document for COURSE CODE: ${item["COURSE CODE"]}, ${docError.message} !`
+            );
           }
         }
-
-        processedSheets += 1;
-        const percent = Math.round((processedSheets / totalSheets) * 100);
-        updateProgress(percent);
       }
+
+      // Upload the accumulated slots data after processing all subjects
+      const slotsDocRef = doc(db, "AllExams", "Slots");
+      await setDoc(slotsDocRef, slotsData, { merge: true });
 
       if (cancelToken.current !== false) {
-        console.log("All valid sheets processed!");
+        showAlert("success", "Subjects and slots updated !");
         updateProgress(100);
       } else {
-        throw new Error("Upload Cancelled !");
+        showAlert("warning", "Upload Cancelled !");
       }
     } catch (error) {
+      console.error(error);
       updateProgress(0);
-
-      throw new Error("The file is not in the correct format!");
+      showAlert("error", error.message);
     }
   };
-
   const fetchSubjects = async () => {
     const subjectsCollection = collection(db, "Subjects");
 
@@ -306,7 +330,7 @@ const AppProvider = ({ children }) => {
       querySnapshot.forEach((doc) => {
         subjects.push(doc.data());
       });
-      
+
       return subjects;
     } catch (error) {
       console.error("Error fetching document: ", error);
@@ -314,21 +338,78 @@ const AppProvider = ({ children }) => {
     }
   };
 
+  const fetchExamOptions = async () => {
+    try {
+      // Fetch data from Firestore
+      const subjectsCollection = collection(db, "Subjects");
+      const querySnapshot = await getDocs(subjectsCollection);
+
+      // Create an object to store options for each department
+      const fetchedOptions = {};
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const dept = data["DEPT"].substring(0, 2); // Get the first two letters of the department name
+        const courseCode = data["COURSE CODE"];
+
+        if (dept && courseCode) {
+          if (!fetchedOptions[dept]) {
+            fetchedOptions[dept] = [];
+          }
+          if (!fetchedOptions[dept].includes(courseCode)) {
+            fetchedOptions[dept].push(courseCode);
+          }
+        }
+      });
+
+      return fetchedOptions; // Return the fetched options
+    } catch (error) {
+      console.error("Error fetching options:", error);
+      throw error; // Re-throw the error for handling in the component
+    }
+  };
+
+  const fetchSlots = async () => {
+    const slotsDocRef = doc(db, "AllExams", "Slots");
+
+    try {
+      const docSnap = await getDoc(slotsDocRef);
+
+      if (docSnap.exists()) {
+        const docData = docSnap.data();
+        const transformedData = Object.keys(docData).map((key) => ({
+          Slot: key,
+          Exams: docData[key],
+        }));
+        return transformedData;
+      } else {
+        console.log("No such document!");
+        return {};
+      }
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      return {};
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
         ...state,
-        displayAlert,
         setupUser,
         logoutUser,
+        showAlert,
         examForm,
         fetchBatches,
         fetchAcademicYear,
         updateAcademicYear,
         uploadSubFile,
         fetchSubjects,
+        fetchExamOptions,
+        fetchSlots,
       }}
     >
+      {contextHolder}
       {children}
     </AppContext.Provider>
   );

@@ -11,7 +11,6 @@ const Subjects = () => {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(true);
   const cancelToken = useRef(true); // Ref to manage cancellation
-  const [messageApi, contextHolder] = message.useMessage();
 
   const { uploadSubFile } = useAppContext();
 
@@ -36,23 +35,11 @@ const Subjects = () => {
     if (workbook) {
       setUploading(false);
       cancelToken.current = true; // Reset cancel token
-      try {
-        await uploadSubFile(workbook, updateProgress, cancelToken);
-        messageApi.open({
-          type: "success",
-          content: "File Uploaded Successfully!",
-        });
-      } catch (error) {
-        console.log(error.message);
-        messageApi.open({
-          type: "error",
-          content: error.message,
-        });
-      } finally {
-        setUploading(true);
-        setProgress(0);
-        setWorkbook(null);
-      }
+      await uploadSubFile(workbook, updateProgress, cancelToken);
+
+      setUploading(true);
+      setProgress(0);
+      setWorkbook(null);
     }
   };
 
@@ -62,7 +49,6 @@ const Subjects = () => {
 
   return (
     <>
-      {contextHolder}
       Add Subjects
       <div>
         <FlexContainer>

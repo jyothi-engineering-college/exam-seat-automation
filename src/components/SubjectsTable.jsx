@@ -51,18 +51,7 @@ const SubjectsTable = () => {
 
   const filteredResults = filteredData(data, searchTerm);
 
-  /*{
-    "COURSE NAME": "DIGITAL LAB",
-    "DEPT": "CSE",
-    "CREDIT": 2,
-    "COURSE CODE": "CSL 202",
-    "T": "0",
-    "HOURS": "3",
-    "SEM": "S4",
-    "SLOT": "S ",
-    "P": "3",
-    "L": "0"
-}*/
+ 
   const columns = [
     {
       name: "Semester",
