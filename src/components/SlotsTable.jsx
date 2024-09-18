@@ -31,6 +31,7 @@ const SlotsTable = () => {
 
   useEffect(() => {
     fetchSlots().then((data) => {
+      
       setData(data);
     });
   }, [fetchSlots]);

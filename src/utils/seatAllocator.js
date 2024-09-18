@@ -8,6 +8,9 @@ export const test = (
   rejoin,
   examToday
 ) => {
+  
+  console.log(classCapacity,deptStrength,letStrength);
+  
   let sup = {};
 
   Object.keys(sup).forEach((key) => {
@@ -333,7 +336,7 @@ export const test = (
 
   const consolidateItems = (items) => {
     const groupedItems = {};
-
+ 
     items.forEach((item) => {
       if (item != 0) {
         const [prefix, num] = item

@@ -12,14 +12,9 @@ const DepartmentTable = () => {
   // Update the data whenever deptView changes
   useEffect(() => {
     if (deptView.length > 0) {
-      // Transform data to repeat the department for each room
-      const transformedData = deptView[0].rooms.map((room, index) => ({
-        dept: deptView[0].dept,
-        room,
-        rollNums: deptView[0].rollNums.slice(index * 10, (index + 1) * 10), // Adjust slice as per requirement
-        count: deptView[0].count[index] || 0,
-      }));
-      setData(transformedData); // Set the new data
+      console.log(deptView); // Log deptView to console
+      
+      setData(deptView); // Set the new data without transformation
     }
   }, [deptView]);
 
@@ -36,6 +31,11 @@ const DepartmentTable = () => {
       .join("<br />"); // Join pairs with a line break
   };
 
+  const formatCounts = (counts) => {
+    // Join count values with a line break
+    return counts.join("<br />");
+  };
+
   const filteredResults = filteredData(data, searchTerm); // Filtered data based on searchTerm
 
   const columns = [
@@ -47,7 +47,9 @@ const DepartmentTable = () => {
     },
     {
       name: "Room",
-      selector: (row) => row.room,
+      selector: (row) => (
+        <div dangerouslySetInnerHTML={{ __html: formatCounts(row.rooms) }} />
+      ),
       sortable: true,
       wrap: true,
     },
@@ -61,7 +63,9 @@ const DepartmentTable = () => {
     },
     {
       name: "Count",
-      selector: (row) => row.count,
+      selector: (row) => (
+        <div dangerouslySetInnerHTML={{ __html: formatCounts(row.count) }} />
+      ),
       sortable: true,
       wrap: true,
     },
@@ -75,11 +79,7 @@ const DepartmentTable = () => {
     setSearchTerm,
   };
 
-  return (
-    <>
-      <TableContainer {...props} />
-    </>
-  );
+  return <TableContainer {...props} />;
 };
 
 export default DepartmentTable;

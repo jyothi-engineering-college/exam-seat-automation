@@ -17,15 +17,13 @@ const TodayExam = () => {
     rejoin,
     examToday,
     setAllocatedData,
+    selectedSlotName,
   } = useAppContext();
   const [slotNames, setSlotNames] = useState([]);
-  const [slot, setSlot] = useState("");
-  const [todayExam, setTodayExam] = useState([]);
 
   const submitSlot = async (slot) => {
-    await fetchExamData(slots[slot]);
-    setSlot(slot);
-    setTodayExam(slots[slot]);
+    
+    await fetchExamData(slots[slot], slot);
   };
 
   useEffect(() => {
@@ -36,7 +34,8 @@ const TodayExam = () => {
       exams &&
       drop &&
       rejoin &&
-      examToday
+      examToday &&
+      selectedSlotName
     ) {
       const allocatedData = test(
         classCapacity,
@@ -45,7 +44,8 @@ const TodayExam = () => {
         exams,
         drop,
         rejoin,
-        examToday
+        examToday,
+        selectedSlotName
       );
       setAllocatedData(allocatedData);
     }
@@ -57,6 +57,7 @@ const TodayExam = () => {
     drop,
     rejoin,
     examToday,
+    selectedSlotName,
   ]);
 
   useEffect(() => {
@@ -74,6 +75,7 @@ const TodayExam = () => {
         </div>
         <div style={{ marginLeft: "450px" }}>
           <Select
+            defaultValue={selectedSlotName}
             style={{ width: 120 }}
             placeholder="Select Slot"
             onChange={submitSlot}
@@ -82,12 +84,12 @@ const TodayExam = () => {
         </div>
       </FlexContainer>
       <div className="tcwrap">
-        {todayExam.map((exam, index) => (
+        {examToday.map((exam, index) => (
           <div key={index} className="tcard">
             <img src="../book.svg" alt="hi" />
             <div className="cdet">
               <h3>{exam}</h3>
-              <p>Slot {slot}</p>
+              <p>Slot {selectedSlotName}</p>
             </div>
           </div>
         ))}

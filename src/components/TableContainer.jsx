@@ -27,6 +27,8 @@ const tableCustomStyles = {
   },
   cells: {
     style: {
+      fontSize: "18px",
+
       borderStyle: "double",
       borderColor: "#c7cfd2",
       borderWidth: "0.2px",

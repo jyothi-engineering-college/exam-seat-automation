@@ -46,6 +46,7 @@ const reducer = (state, action) => {
         drop: action.payload.drop,
         rejoin: action.payload.rejoin,
         examToday: action.payload.examToday,
+        selectedSlotName: action.payload.selectedSlotName,
       };
     case SET_ALLOCATED_DATA:
       return {

@@ -1,6 +1,7 @@
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import { Alert } from "antd";
 
 const ClassButton = () => {
   const { classNames, classroomView, setSingleClassView } = useAppContext();
@@ -25,7 +26,9 @@ const ClassButton = () => {
           </Button>
         ))
       ) : (
-        <p>No classes available</p>
+        <center>
+          <Alert message="No classes available" type="error"></Alert>
+        </center>
       )}
     </>
   );
