@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
+import { EditOutlined } from "@ant-design/icons";
 
 
 const BatchesTable = () => {
@@ -36,7 +37,25 @@ const BatchesTable = () => {
     },
     {
       name: "Subjects",
-      selector: (row) => row.subjects.join(", "),
+      selector: (row) => row.exams.join(", "),
+      sortable: true,
+      wrap: true,
+    },
+    {
+      name: "Regular Strength",
+      selector: (row) => row.regStrength || 0,
+      sortable: true,
+      wrap: true,
+    },
+    {
+      name: "Let Strength ",
+      selector: (row) => row.letStrength || 0,
+      sortable: true,
+      wrap: true,
+    },
+    {
+      name: "Edit",
+      selector: (row) => <EditOutlined />,
       sortable: true,
       wrap: true,
     },

@@ -7,9 +7,6 @@ import { useNavigate } from "react-router-dom";
 const Batches = () => {
   const navigate = useNavigate();
 
-  const printPage = () => {
-    navigate("/print");
-  };
 
   const handleFloatButtonClick = () => {
     navigate("/addform?destination=batchesform");
@@ -18,11 +15,7 @@ const Batches = () => {
   return (
     <>
       <BatchesTable />
-      <center>
-        <Button onClick={printPage} className="printbutton">
-          PRINT
-        </Button>
-      </center>
+   
       <FloatButton
         tooltip={<div>Add</div>}
         icon={<PlusCircleOutlined />}

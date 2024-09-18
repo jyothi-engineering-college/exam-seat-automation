@@ -3,20 +3,23 @@ import { Button, Select, Form, message, Popconfirm } from "antd";
 import { useAppContext } from "../context/AppContext";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { InputNumber } from "antd";
+import { calculateYear } from "../utils/yearCalculator";
 
 const DepartmentForm = () => {
   const navigate = useNavigate();
   const { examForm, fetchExamOptions } = useAppContext();
+  
   const initialState = {
     depts: [
-      { name: "CE", options: [], initialValues: [] },
-      { name: "CS", options: [], initialValues: [] },
-      { name: "ME", options: [], initialValues: [] },
-      { name: "AD", options: [], initialValues: [] },
-      { name: "EE", options: [], initialValues: [] },
-      { name: "EC", options: [], initialValues: [] },
-      { name: "CC", options: [], initialValues: [] },
-      { name: "MC", options: [], initialValues: [] },
+      { name: "CE", options: [], initialValues: [], reg: 0, let: 0 },
+      { name: "CS", options: [], initialValues: [], reg: 0, let: 0 },
+      { name: "ME", options: [], initialValues: [], reg: 0, let: 0 },
+      { name: "AD", options: [], initialValues: [], reg: 0, let: 0 },
+      { name: "EE", options: [], initialValues: [], reg: 0, let: 0 },
+      { name: "EC", options: [], initialValues: [], reg: 0, let: 0 },
+      { name: "CC", options: [], initialValues: [], reg: 0, let: 0 },
+      { name: "MC", options: [], initialValues: [], reg: 0, let: 0 },
     ],
     year: "first_years",
   };
@@ -25,58 +28,26 @@ const DepartmentForm = () => {
   const [selectedYear, setSelectedYear] = useState(null);
   const hasLoaded = useRef(false);
   const [form] = Form.useForm();
-  const calculateYear = (value, dept, currentYear) => {
-    const hasYearPrefix = dept.name.length > 2;
-    const deptWithoutYear = hasYearPrefix ? dept.name.slice(2) : dept.name;
-    switch (value) {
-      case "first_years":
-        return { ...dept, name: `${currentYear}${deptWithoutYear}` };
-      case "second_years":
-        return { ...dept, name: `${currentYear - 1}${deptWithoutYear}` };
-      case "third_years":
-        return { ...dept, name: `${currentYear - 2}${deptWithoutYear}` };
-      case "fourth_years":
-        return { ...dept, name: `${currentYear - 3}${deptWithoutYear}` };
-      default:
-        return dept;
-    }
-  };
+
   const years = (value) => {
     const currentYear = 2024 % 100;
     setSelectedYear(value);
 
     setDepts((prevDepts) =>
-      prevDepts.map((dept) => {
-        const hasYearPrefix = dept.name.length > 2;
-        const deptWithoutYear = hasYearPrefix ? dept.name.slice(2) : dept.name;
-
-        switch (value) {
-          case "first_years":
-            return { ...dept, name: `${currentYear}${deptWithoutYear}` };
-          case "second_years":
-            return { ...dept, name: `${currentYear - 1}${deptWithoutYear}` };
-          case "third_years":
-            return { ...dept, name: `${currentYear - 2}${deptWithoutYear}` };
-          case "fourth_years":
-            return { ...dept, name: `${currentYear - 3}${deptWithoutYear}` };
-          default:
-            return dept;
-        }
-      })
+      prevDepts.map((dept) => calculateYear(value, dept, currentYear))
     );
   };
 
-  const handleChange = (value, deptName) => {
+  const handleFieldChange = (field, value, deptName) => {
     setDepts((prevDepts) =>
       prevDepts.map((dept) =>
-        dept.name === deptName ? { ...dept, initialValues: value } : dept
+        dept.name === deptName ? { ...dept, [field]: value } : dept
       )
     );
   };
 
   const submitForm = async () => {
     try {
-      
       await examForm(depts);
 
       localStorage.removeItem("depts");
@@ -84,7 +55,7 @@ const DepartmentForm = () => {
 
       setDepts(initialState.depts);
       setSelectedYear(initialState.year);
-      
+
       form.resetFields();
       setTimeout(() => navigate("/batches"), 600);
     } catch (error) {
@@ -103,58 +74,77 @@ const DepartmentForm = () => {
     if (storedYear) {
       setSelectedYear(storedYear);
       years(storedYear);
+
+      // Populate the form with the selected year
       form.setFieldsValue({ Year: storedYear });
+
+      // Ensure form fields are updated based on depts state
+      const deptFields = depts.reduce((acc, dept) => {
+        acc[dept.name] = dept.initialValues;
+        acc[`reg${dept.name}`] = dept.reg;
+        acc[`let${dept.name}`] = dept.let;
+        return acc;
+      }, {});
+
+      form.setFieldsValue(deptFields);
     }
-  }, [form]);
+  }, [form]); // Added `depts` to dependencies
 
-  useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        // Fetch options from your API or data source
-        const options = await fetchExamOptions();
 
-        // Create a mapping of year-attached names to their options
-        const optionsMap = Object.entries(options).reduce(
-          (map, [deptKey, opts]) => {
-            const deptNameWithYear = calculateYear(
-              selectedYear,
-              { name: deptKey },
-              2024
-            ).name;
-            map[deptNameWithYear] = opts;
-            return map;
-          },
-          {}
+
+useEffect(() => {
+  const loadOptions = async () => {
+    try {
+      // Fetch options from your API or data source
+      const options = await fetchExamOptions();
+
+      // Create a mapping of year-attached names to their options
+      const optionsMap = Object.entries(options).reduce(
+        (map, [deptKey, opts]) => {
+          const deptNameWithYear = calculateYear(
+            selectedYear,
+            { name: deptKey },
+            2024
+          ).name;
+          map[deptNameWithYear] = opts;
+          return map;
+        },
+        {}
+      );
+
+      // Update departments with options based on matching names
+      const updatedDepts = depts.map((dept) => {
+        // Calculate the department name with the current year
+        const deptNameWithYear = calculateYear(selectedYear, dept, 2024).name;
+        return {
+          ...dept,
+          options: optionsMap[deptNameWithYear] || [], // Use default empty array if no options found
+        };
+      });
+
+      // Set the updated depts state
+      setDepts((prevDepts) => {
+        // Map over previous depts to update their options
+        const updatedDeptsMap = updatedDepts.reduce((map, dept) => {
+          map[dept.name] = dept;
+          return map;
+        }, {});
+
+        return prevDepts.map(
+          (prevDept) => updatedDeptsMap[prevDept.name] || prevDept
         );
+      });
+    } catch (error) {
+      console.error("Error loading options:", error);
+    }
+  };
 
-        // Update departments with options based on matching names
-        const updatedDepts = depts.map((dept) => {
-          // Keep the original name in the state
-          const deptNameWithYear = calculateYear(selectedYear, dept, 2024).name;
-          return {
-            ...dept,
-            options: optionsMap[deptNameWithYear] || [],
-          };
-        });
+  loadOptions();
+}, [selectedYear, fetchExamOptions]);
 
-        // Set the updated depts state
-        setDepts((prevDepts) =>
-          prevDepts.map((prevDept) => {
-            const updatedDept = updatedDepts.find(
-              (dept) => dept.name === prevDept.name
-            );
-            return updatedDept
-              ? { ...prevDept, options: updatedDept.options }
-              : prevDept;
-          })
-        );
-      } catch (error) {
-        console.error("Error loading options:", error);
-      }
-    };
-
-    loadOptions();
-  }, [selectedYear]);
+  
+  
+  
   useEffect(() => {
     if (hasLoaded.current) {
       localStorage.setItem("depts", JSON.stringify(depts));
@@ -163,6 +153,9 @@ const DepartmentForm = () => {
       hasLoaded.current = true;
     }
   }, [depts, selectedYear]);
+
+
+  
   return (
     <>
       <Form
@@ -192,20 +185,41 @@ const DepartmentForm = () => {
 
         {depts.map((dept, i) => (
           <div key={i}>
-            <Form.Item
-              label={dept.name}
-              name={dept.name}
-              initialValue={dept.initialValues}
-            >
+            <h3>{dept.name}</h3>
+            <Form.Item name={dept.name} initialValue={dept.initialValues}>
               <Select
                 mode="tags"
                 style={{ width: "100%" }}
                 placeholder={`Add Exams for ${dept.name}`}
-                onChange={(value) => handleChange(value, dept.name)}
+                onChange={(value) =>
+                  handleFieldChange("initialValues", value, dept.name)
+                }
                 options={dept.options.map((exam) => ({
                   value: exam,
                   label: exam,
                 }))}
+              />
+            </Form.Item>
+            <Form.Item name={`reg${dept.name}`} initialValue={dept.reg}>
+              <InputNumber
+                size="large"
+                min={1}
+                max={65}
+                placeholder="Regular Strength"
+                style={{ width: "200px", marginRight: "40px" }}
+                value={dept.reg}
+                onChange={(value) => handleFieldChange("reg", value, dept.name)}
+              />
+            </Form.Item>
+            <Form.Item name={`let${dept.name}`} initialValue={dept.let}>
+              <InputNumber
+                size="large"
+                min={1}
+                max={40}
+                placeholder="LET Strength"
+                style={{ width: "200px" }}
+                value={dept.let}
+                onChange={(value) => handleFieldChange("let", value, dept.name)}
               />
             </Form.Item>
             <br />

@@ -1,4 +1,5 @@
 import { SearchOutlined } from "@ant-design/icons/lib";
+import { Select } from "antd";
 import { ConfigProvider, DatePicker, Input, Space } from "antd";
 import DataTable, { createTheme } from "react-data-table-component";
 
@@ -53,18 +54,20 @@ const TableContainer = ({
             </center>
           </div>
 
-          {year && (
-            <ConfigProvider
-              theme={{
-                token: {
-                  colorText: "#07314a",
-                  fontWeightStrong: 800,
-                  colorPrimary: "#07314a",
-                  colorBgElevated: "#f0f9ff",
-                },
-              }}
-            >
-              <Space>
+          <ConfigProvider
+            theme={{
+              token: {
+                colorText: "#07314a",
+                fontWeightStrong: 800,
+                colorPrimary: "#07314a",
+                colorBgElevated: "#f0f9ff",
+              },
+            }}
+          >
+            <Space>
+            
+
+              {year && (
                 <DatePicker
                   size="large"
                   placeholder="Select Academic Year"
@@ -73,9 +76,9 @@ const TableContainer = ({
                   onChange={yearChanged}
                   picker="year"
                 />
-              </Space>
-            </ConfigProvider>
-          )}
+              )}
+            </Space>
+          </ConfigProvider>
 
           <div className="search-container">
             <Input
