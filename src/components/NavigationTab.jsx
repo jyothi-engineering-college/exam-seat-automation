@@ -9,6 +9,7 @@ const NavigationTab = () => {
     <center>
       <Segmented
         className="navigationTab"
+        defaultValue=""
         options={[
           "Home",
           "Slots",

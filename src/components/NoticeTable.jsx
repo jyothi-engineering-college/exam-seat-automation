@@ -12,6 +12,7 @@ const NoticeTable = () => {
   // useEffect to update the data whenever noticeBoardView changes
   useEffect(() => {
     if (noticeBoardView.length > 0) {
+
       setData(noticeBoardView); // Set the new data from noticeBoardView
     }
   }, [noticeBoardView]); // Dependency array includes noticeBoardView
@@ -31,6 +32,10 @@ const NoticeTable = () => {
       .join("<br />"); // Join pairs with a line break
   };
 
+  const formatCount = (counts) => {
+    return counts ? counts.join("<br />") : "0"; // Join count values with a line break
+  };
+
   const columns = [
     {
       name: "Class",
@@ -45,11 +50,12 @@ const NoticeTable = () => {
       ),
       sortable: true,
       wrap: true,
-      width:10
     },
     {
       name: "Count",
-      selector: (row) => row.count || 0,
+      selector: (row) => (
+        <div dangerouslySetInnerHTML={{ __html: formatCount(row.count) }} />
+      ),
       sortable: true,
       wrap: true,
     },

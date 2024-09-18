@@ -49,7 +49,8 @@ const initialState = {
   deptView: {},
   classroomView: [],
   classNames: [],
-  singleClassView:[]
+  singleClassView: [],
+  selectedSlotName: "",
 };
 
 const AppContext = createContext();
@@ -565,10 +566,12 @@ const AppProvider = ({ children }) => {
 
     try {
       const slotsSnap = await getDoc(slotsDocRef);
-      const datetimeSnap = await getDoc(datetimeDocRef);
+      const datetimeSnap = await getDoc(datetimeDocRef);      
 
       if (slotsSnap.exists() && datetimeSnap.exists()) {
         const slotsData = slotsSnap.data();
+        console.log(slotsData,"slotsData");
+        
         const datetimeData = datetimeSnap.data();
 
         const formattedData = Object.keys(slotsData).map((slotKey) => {
@@ -701,7 +704,7 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const fetchExamData = async (examToday) => {
+  const fetchExamData = async (examToday,selectedSlotName) => {
     showAlert("loading", "Fetching Exam Data ...");
     const examHallDocRef = doc(db, "Classes", "AvailableClasses");
     const examsDocRef = doc(db, "DeptDetails", "Exams");
@@ -732,6 +735,7 @@ const AppProvider = ({ children }) => {
         const deptStrength = regSnap.data();
         const drop = Object.values(dropSnap.data()).flat();
         const rejoin = rejoinSnap.data();
+        
 
         dispatch({
           type: SET_ALLOCATION_DETAILS,
@@ -743,6 +747,7 @@ const AppProvider = ({ children }) => {
             drop,
             rejoin,
             examToday,
+            selectedSlotName,
           },
         });
         showAlert("success", "Exam Data Fetched Successfully !");
@@ -752,6 +757,7 @@ const AppProvider = ({ children }) => {
         return [];
       }
     } catch (error) {
+      
       showAlert("error", error.message);
       console.error("Error fetching document: ", error);
       return [];
