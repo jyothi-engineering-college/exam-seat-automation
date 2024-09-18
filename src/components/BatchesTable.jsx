@@ -36,10 +36,35 @@ const BatchesTable = () => {
     },
     {
       name: "Subjects",
-      selector: (row) => row.subjects.join(", "),
+      selector: (row) => row.exams.join(", "),
       sortable: true,
       wrap: true,
     },
+    {
+      name: "Regular Strength",
+      selector: (row) => row.regStrength || 0,
+      sortable: true,
+      wrap: true,
+    },
+    {
+      name: "Let Strength ",
+      selector: (row) => row.letStrength || 0,
+      sortable: true,
+      wrap: true,
+    },
+    {
+      name: "Dropped Students",
+      selector: (row) => row.drop?.join(" , ") || "NIL",
+      sortable: true,
+      wrap: true,
+    },
+    {
+      name: "Rejoined Students",
+      selector: (row) => row.rejoin?.join(" , ") || "NIL",
+      sortable: true,
+      wrap: true,
+    },
+
   ];
 
   const disabledDate = (currentDate) => {
