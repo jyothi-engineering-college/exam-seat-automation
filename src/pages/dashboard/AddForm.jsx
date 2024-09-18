@@ -1,14 +1,14 @@
 import queryString from "query-string";
 import { useLocation } from "react-router-dom";
 import FileContainer from "../../components/FileContainer";
-import DepartmentForm from "../../components/DepartmentForm";
+import BatchesForm from "../../components/BatchesForm";
 const AddForm = () => {
   const location = useLocation();
   const { destination } = queryString.parse(location.search);
 
   switch (destination) {
     case "batchesform":
-      return <DepartmentForm />;
+      return <BatchesForm />;
     
     case "subjectsform":
     case "examhallform":

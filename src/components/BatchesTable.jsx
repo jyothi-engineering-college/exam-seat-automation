@@ -54,6 +54,18 @@ const BatchesTable = () => {
       wrap: true,
     },
     {
+      name: "Dropped Students",
+      selector: (row) => "NIL",
+      sortable: true,
+      wrap: true,
+    },
+    {
+      name: "Rejoined Students",
+      selector: (row) => "NIL",
+      sortable: true,
+      wrap: true,
+    },
+    {
       name: "Edit",
       selector: (row) => <EditOutlined />,
       sortable: true,

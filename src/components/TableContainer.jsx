@@ -65,8 +65,6 @@ const TableContainer = ({
             }}
           >
             <Space>
-            
-
               {year && (
                 <DatePicker
                   size="large"
