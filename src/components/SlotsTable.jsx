@@ -1,5 +1,5 @@
 import { EditOutlined } from "@ant-design/icons";
-import { DatePicker, Popconfirm, Select } from "antd";
+import { Button, DatePicker, Popconfirm, Select } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { createTheme } from "react-data-table-component";
@@ -123,7 +123,7 @@ const SlotsTable = () => {
       selector: (row) =>
         editingKey === row.Slot ? (
           <span>
-            <a onClick={handleSave}>Save</a>
+            <Button type="primary" onClick={handleSave}>Save</Button>
             <Popconfirm
               title="Cancel editing?"
               onConfirm={() => {
@@ -131,13 +131,13 @@ const SlotsTable = () => {
                 setEditData({}); // Clear editData on cancel
               }}
             >
-              <a style={{ marginLeft: 8 }}>Cancel</a>
+              <Button type="primary" style={{ marginLeft: 8 }} danger>Cancel</Button>
             </Popconfirm>
           </span>
         ) : (
-          <a onClick={() => handleEdit(row.Slot)}>
+          <Button type="link" onClick={() => handleEdit(row.Slot)}>
             <EditOutlined />
-          </a>
+          </Button>
         ),
       sortable: false,
     },

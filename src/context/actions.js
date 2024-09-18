@@ -7,6 +7,7 @@ export const LOGOUT_USER = "LOGOUT_USER";
 export const SET_SLOTS = "SET_SLOTS";
 export const SET_ALLOCATION_DETAILS = "SET_ALLOCATION_DETAILS";
 export const SET_ALLOCATED_DATA = "SET_ALLOCATED_DATA";
+export const SET_SINGLE_CLASS = "SET_SINGLE_CLASS";
 
 //  classCapacity: {},
 //   deptStrength: {},

@@ -19,10 +19,15 @@ const TodayExam = () => {
     setAllocatedData,
   } = useAppContext();
   const [slotNames, setSlotNames] = useState([]);
+  const [slot, setSlot] = useState("");
+  const [todayExam, setTodayExam] = useState([]);
 
   const submitSlot = async (slot) => {
     await fetchExamData(slots[slot]);
+    setSlot(slot);
+    setTodayExam(slots[slot]);
   };
+
   useEffect(() => {
     if (
       classCapacity &&
@@ -77,13 +82,15 @@ const TodayExam = () => {
         </div>
       </FlexContainer>
       <div className="tcwrap">
-        <div className="tcard">
-          <img src="../book.svg" alt="hi" />
-          <div className="cdet">
-            <h3>CS 21</h3>
-            <p>Slot A</p>
+        {todayExam.map((exam, index) => (
+          <div key={index} className="tcard">
+            <img src="../book.svg" alt="hi" />
+            <div className="cdet">
+              <h3>{exam}</h3>
+              <p>Slot {slot}</p>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </>
   );

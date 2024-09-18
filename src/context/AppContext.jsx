@@ -4,6 +4,7 @@ import {
   LOGOUT_USER,
   SET_ALLOCATED_DATA,
   SET_ALLOCATION_DETAILS,
+  SET_SINGLE_CLASS,
   SET_SLOTS,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
@@ -48,6 +49,7 @@ const initialState = {
   deptView: {},
   classroomView: [],
   classNames: [],
+  singleClassView:[]
 };
 
 const AppContext = createContext();
@@ -159,6 +161,7 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchBatches = async () => {
+    showAlert("loading", "Fetching Batch Details ...");
     const examsRef = doc(firestore, "DeptDetails", "Exams");
     const regStrengthRef = doc(firestore, "DeptDetails", "RegularStrength");
     const letStrengthRef = doc(firestore, "DeptDetails", "LetStrength");
@@ -206,12 +209,14 @@ const AppProvider = ({ children }) => {
       }
       return formattedData;
     } catch (error) {
+      showAlert("error", error.message);
       console.error("Error fetching documents: ", error);
       return [];
     }
   };
 
   const fetchAcademicYear = async () => {
+    
     const docRef = doc(firestore, "DeptDetails", "AcademicYear");
     try {
       let year = dayjs().year();
@@ -453,8 +458,17 @@ const AppProvider = ({ children }) => {
           return;
         }
 
-        data.slice(1).forEach((row) => {
-          if (row.length === 0) return; // Skip empty rows
+        // Sort the data based on "No:of desks" in descending order
+        const sortedData = data
+          .slice(1)
+          .filter((row) => row.length > 0)
+          .sort((a, b) => {
+            const desksA = parseInt(a[2], 10) || 0; // Assuming "No:of desks" is at index 2
+            const desksB = parseInt(b[2], 10) || 0;
+            return desksB - desksA; // Descending order
+          });
+
+        sortedData.forEach((row) => {
           if (!cancelToken.current) return; // Check for cancellation
 
           const item = {};
@@ -466,7 +480,7 @@ const AppProvider = ({ children }) => {
           const desks = parseInt(item["No:of desks"], 10);
 
           if (classroom && desks) {
-            const [rows, columns] = findRowsAndColumns(desks); // Get optimal rows and columns array
+            const [rows, columns] = findRowsAndColumns(desks * 2); // Get optimal rows and columns array
             classesData[classroom] = [rows, columns]; // Store as an array of [rows, columns]
 
             processedItems++;
@@ -494,6 +508,7 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchSubjects = async () => {
+    showAlert("loading", "Fetching Subjects ...");
     const subjectsCollection = collection(db, "Subjects");
 
     try {
@@ -511,6 +526,8 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchExamOptions = async () => {
+    showAlert("loading", "Fetching Options ...");
+    
     try {
       // Fetch data from Firestore
       const subjectsCollection = collection(db, "Subjects");
@@ -542,6 +559,7 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchSlots = async () => {
+    showAlert("loading", "Fetching Slots ...");
     const slotsDocRef = doc(db, "AllExams", "Slots");
     const datetimeDocRef = doc(db, "AllExams", "DateTime");
 
@@ -584,46 +602,53 @@ const AppProvider = ({ children }) => {
   };
 
   const updateSlots = async (data) => {
-    const updatedData = data.map((slot) => ({
-      ...slot,
-      Date: Array.isArray(slot.Date)
-        ? slot.Date.map((date) => date.toISOString())
-        : null,
-    }));
+    showAlert("loading", "Updating Slots ...");
+    try {
+      const updatedData = data.map((slot) => ({
+        ...slot,
+        Date: Array.isArray(slot.Date)
+          ? slot.Date.map((date) => date.toISOString())
+          : null,
+      }));
 
-    const slotsDocRef = doc(db, "AllExams", "Slots");
-    const datetimeDocRef = doc(db, "AllExams", "DateTime");
+      const slotsDocRef = doc(db, "AllExams", "Slots");
+      const datetimeDocRef = doc(db, "AllExams", "DateTime");
 
-    // Prepare objects to store updates
-    const slotsUpdates = {};
-    const datetimeUpdates = {};
+      // Prepare objects to store updates
+      const slotsUpdates = {};
+      const datetimeUpdates = {};
 
-    // Process each item from the data
-    updatedData.forEach((item) => {
-      // Add exams to the slots object
-      if (item.Exams) {
-        slotsUpdates[item.Slot] = item.Exams;
+      // Process each item from the data
+      updatedData.forEach((item) => {
+        // Add exams to the slots object
+        if (item.Exams) {
+          slotsUpdates[item.Slot] = item.Exams;
+        }
+
+        // Convert timeRange if Date is present
+        if (item.Date) {
+          const startTime = item.Date[0];
+          const endTime = item.Date[1];
+
+          datetimeUpdates[item.Slot] = [startTime, endTime];
+        }
+      });
+
+      if (Object.keys(slotsUpdates).length > 0) {
+        await updateDoc(slotsDocRef, slotsUpdates);
       }
 
-      // Convert timeRange if Date is present
-      if (item.Date) {
-        const startTime = item.Date[0];
-        const endTime = item.Date[1];
-
-        datetimeUpdates[item.Slot] = [startTime, endTime];
+      if (Object.keys(datetimeUpdates).length > 0) {
+        await updateDoc(datetimeDocRef, datetimeUpdates);
       }
-    });
-
-    if (Object.keys(slotsUpdates).length > 0) {
-      await updateDoc(slotsDocRef, slotsUpdates);
-    }
-
-    if (Object.keys(datetimeUpdates).length > 0) {
-      await updateDoc(datetimeDocRef, datetimeUpdates);
+      showAlert("success", "Slots Updated Successfully !");
+    } catch (error) { 
+      showAlert("error", error.message);
     }
   };
 
   const fetchExamHalls = async () => {
+    showAlert("loading", "Fetching Exam Halls ...");
     const slotsDocRef = doc(db, "Classes", "AvailableClasses");
 
     try {
@@ -650,6 +675,7 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchslotNames = async () => {
+    showAlert("loading", "Fetching Slots");
     const slotsDocRef = doc(db, "AllExams", "Slots");
 
     try {
@@ -676,6 +702,7 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchExamData = async (examToday) => {
+    showAlert("loading", "Fetching Exam Data ...");
     const examHallDocRef = doc(db, "Classes", "AvailableClasses");
     const examsDocRef = doc(db, "DeptDetails", "Exams");
     const letDocRef = doc(db, "DeptDetails", "LetStrength");
@@ -718,11 +745,14 @@ const AppProvider = ({ children }) => {
             examToday,
           },
         });
+        showAlert("success", "Exam Data Fetched Successfully !");
       } else {
+        showAlert("warning", "The Slot is Empty !");
         console.log("No such document!");
         return [];
       }
     } catch (error) {
+      showAlert("error", error.message);
       console.error("Error fetching document: ", error);
       return [];
     }
@@ -736,6 +766,14 @@ const AppProvider = ({ children }) => {
         deptView: allocatedData[1],
         classroomView: allocatedData[2],
         classNames: allocatedData[3],
+      },
+    });
+  };
+  const setSingleClassView = (singleClassView) => {
+    dispatch({
+      type: SET_SINGLE_CLASS,
+      payload: {
+        singleClassView,
       },
     });
   };
@@ -760,7 +798,8 @@ const AppProvider = ({ children }) => {
         updateSlots,
         fetchExamData,
         fetchslotNames,
-        setAllocatedData
+        setAllocatedData,
+        setSingleClassView,
       }}
     >
       {contextHolder}

@@ -2,6 +2,7 @@ import {
   LOGOUT_USER,
   SET_ALLOCATED_DATA,
   SET_ALLOCATION_DETAILS,
+  SET_SINGLE_CLASS,
   SET_SLOTS,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
@@ -54,6 +55,11 @@ const reducer = (state, action) => {
         classroomView: action.payload.classroomView,
         classNames: action.payload.classNames,
       };
+    case SET_SINGLE_CLASS:
+      return {
+        ...state,
+        singleClassView: action.payload.singleClassView,
+      }
 
     default:
       throw new Error(`Undefined Action :${action.type}`);
