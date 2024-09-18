@@ -2,6 +2,9 @@ import React, { useReducer, useContext, createContext } from "react";
 import reducer from "./reducers";
 import {
   LOGOUT_USER,
+  SET_ALLOCATED_DATA,
+  SET_ALLOCATION_DETAILS,
+  SET_SLOTS,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
   SETUP_USER_SUCCESS,
@@ -32,6 +35,19 @@ const initialState = {
   isLoading: false,
   alertText: "",
   user: user ? JSON.parse(user) : null,
+  classCapacity: {},
+  deptStrength: {},
+  letStrength: {},
+  exams: {},
+  sup: {},
+  drop: [],
+  rejoin: {},
+  slots: {},
+  examToday: [],
+  noticeBoardView: {},
+  deptView: {},
+  classroomView: [],
+  classNames: [],
 };
 
 const AppContext = createContext();
@@ -105,11 +121,13 @@ const AppProvider = ({ children }) => {
     removeUserFromTheLocalStorage();
   };
 
-  const examForm = async (depts) => {
+  const batchesForm = async (depts) => {
     showAlert("loading", "Updating Batch Details ...");
     const SubdocRef = doc(firestore, "DeptDetails", "Exams");
     const LetdocRef = doc(firestore, "DeptDetails", "LetStrength");
     const RegdocRef = doc(firestore, "DeptDetails", "RegularStrength");
+    const dropdocRef = doc(firestore, "DeptDetails", "Dropped");
+    const rejoindocRef = doc(firestore, "DeptDetails", "Rejoined");
 
     const getDeptFields = (key) =>
       depts.reduce(
@@ -123,11 +141,15 @@ const AppProvider = ({ children }) => {
     const SubFields = getDeptFields("initialValues");
     const RegFields = getDeptFields("reg");
     const LetFields = getDeptFields("let");
+    const dropFields = getDeptFields("drop");
+    const rejoinFields = getDeptFields("rejoin");
 
     try {
       await setDoc(SubdocRef, SubFields, { merge: true });
       await setDoc(RegdocRef, RegFields, { merge: true });
       await setDoc(LetdocRef, LetFields, { merge: true });
+      await setDoc(dropdocRef, dropFields, { merge: true });
+      await setDoc(rejoindocRef, rejoinFields, { merge: true });
 
       showAlert("success", "Batch Details Updated Successfully !");
     } catch (error) {
@@ -135,26 +157,40 @@ const AppProvider = ({ children }) => {
       throw new Error(`${error.message}`);
     }
   };
+
   const fetchBatches = async () => {
     const examsRef = doc(firestore, "DeptDetails", "Exams");
     const regStrengthRef = doc(firestore, "DeptDetails", "RegularStrength");
     const letStrengthRef = doc(firestore, "DeptDetails", "LetStrength");
+    const dropRef = doc(firestore, "DeptDetails", "Dropped");
+    const rejoinRef = doc(firestore, "DeptDetails", "Rejoined");
 
     try {
-      const [examsSnap, regSnap, letSnap] = await Promise.all([
-        getDoc(examsRef),
-        getDoc(regStrengthRef),
-        getDoc(letStrengthRef),
-      ]);
+      const [examsSnap, regSnap, letSnap, dropSnap, rejoinSnap] =
+        await Promise.all([
+          getDoc(examsRef),
+          getDoc(regStrengthRef),
+          getDoc(letStrengthRef),
+          getDoc(dropRef),
+          getDoc(rejoinRef),
+        ]);
 
       const formattedData = [];
 
-      if (examsSnap.exists() && regSnap.exists() && letSnap.exists()) {
+      if (
+        examsSnap.exists() &&
+        regSnap.exists() &&
+        letSnap.exists() &&
+        dropSnap.exists() &&
+        rejoinSnap.exists()
+      ) {
         // Get all department names (assuming all snaps have the same department keys)
         const deptNames = Object.keys({
           ...examsSnap.data(),
           ...regSnap.data(),
           ...letSnap.data(),
+          ...dropSnap.data(),
+          ...rejoinSnap.data(),
         });
 
         deptNames.forEach((deptName) => {
@@ -163,12 +199,11 @@ const AppProvider = ({ children }) => {
             letStrength: letSnap.data()[deptName] || null,
             regStrength: regSnap.data()[deptName] || null,
             exams: examsSnap.data()[deptName] || [],
+            drop: dropSnap.data()[deptName] || null,
+            rejoin: rejoinSnap.data()[deptName] || null,
           });
         });
       }
-
-      console.log(formattedData);
-
       return formattedData;
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -614,6 +649,97 @@ const AppProvider = ({ children }) => {
     }
   };
 
+  const fetchslotNames = async () => {
+    const slotsDocRef = doc(db, "AllExams", "Slots");
+
+    try {
+      const docSnap = await getDoc(slotsDocRef);
+
+      if (docSnap.exists()) {
+        const docData = docSnap.data();
+
+        dispatch({
+          type: SET_SLOTS,
+          payload: { slots: docData },
+        });
+
+        const sortedKeys = Object.keys(docData).sort();
+        return sortedKeys;
+      } else {
+        console.log("No such document!");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      return [];
+    }
+  };
+
+  const fetchExamData = async (examToday) => {
+    const examHallDocRef = doc(db, "Classes", "AvailableClasses");
+    const examsDocRef = doc(db, "DeptDetails", "Exams");
+    const letDocRef = doc(db, "DeptDetails", "LetStrength");
+    const regDocRef = doc(db, "DeptDetails", "RegularStrength");
+    const dropDocRef = doc(db, "DeptDetails", "Dropped");
+    const rejoinDocRef = doc(db, "DeptDetails", "Rejoined");
+
+    try {
+      const classSnap = await getDoc(examHallDocRef);
+      const examsSnap = await getDoc(examsDocRef);
+      const letSnap = await getDoc(letDocRef);
+      const regSnap = await getDoc(regDocRef);
+      const dropSnap = await getDoc(dropDocRef);
+      const rejoinSnap = await getDoc(rejoinDocRef);
+
+      if (
+        classSnap.exists() &&
+        examsSnap.exists() &&
+        letSnap.exists() &&
+        regSnap.exists() &&
+        dropSnap.exists() &&
+        rejoinSnap.exists()
+      ) {
+        const classCapacity = classSnap.data();
+        const exams = examsSnap.data();
+        const letStrength = letSnap.data();
+        const deptStrength = regSnap.data();
+        const drop = Object.values(dropSnap.data()).flat();
+        const rejoin = rejoinSnap.data();
+
+        dispatch({
+          type: SET_ALLOCATION_DETAILS,
+          payload: {
+            classCapacity,
+            deptStrength,
+            letStrength,
+            exams,
+            drop,
+            rejoin,
+            examToday,
+          },
+        });
+      } else {
+        console.log("No such document!");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching document: ", error);
+      return [];
+    }
+  };
+
+  const setAllocatedData = (allocatedData) => {
+    dispatch({
+      type: SET_ALLOCATED_DATA,
+      payload: {
+        noticeBoardView: allocatedData[0],
+        deptView: allocatedData[1],
+        classroomView: allocatedData[2],
+        classNames: allocatedData[3],
+      },
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -621,7 +747,7 @@ const AppProvider = ({ children }) => {
         setupUser,
         logoutUser,
         showAlert,
-        examForm,
+        batchesForm,
         fetchBatches,
         fetchAcademicYear,
         updateAcademicYear,
@@ -632,6 +758,9 @@ const AppProvider = ({ children }) => {
         uploadExamhallFile,
         fetchExamHalls,
         updateSlots,
+        fetchExamData,
+        fetchslotNames,
+        setAllocatedData
       }}
     >
       {contextHolder}

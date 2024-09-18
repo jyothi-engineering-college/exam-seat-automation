@@ -9,8 +9,7 @@ import FlexContainer from "../components/FlexContainer";
 
 const BatchesForm = () => {
   const navigate = useNavigate();
-  const { examForm, fetchExamOptions } = useAppContext();
-
+  const { batchesForm, fetchExamOptions } = useAppContext();
   const initialState = {
     depts: [
       {
@@ -112,13 +111,14 @@ const BatchesForm = () => {
 
   const submitForm = async () => {
     try {
-      await examForm(depts);
+      
+      await batchesForm(depts);
 
       localStorage.removeItem("depts");
       localStorage.removeItem("selectedYear");
 
       setDepts(initialState.depts);
-      setSelectedYear(initialState.year);
+      setSelectedYear(null); 
 
       form.resetFields();
       setTimeout(() => navigate("/batches"), 600);
@@ -139,28 +139,26 @@ const BatchesForm = () => {
       setSelectedYear(storedYear);
       years(storedYear);
 
-      // Populate the form with the selected year
       form.setFieldsValue({ Year: storedYear });
 
-      // Ensure form fields are updated based on depts state
       const deptFields = depts.reduce((acc, dept) => {
         acc[dept.name] = dept.initialValues;
         acc[`reg${dept.name}`] = dept.reg;
         acc[`let${dept.name}`] = dept.let;
+        acc[`drop${dept.name}`] = dept.drop; // Added for drop field
+        acc[`rejoin${dept.name}`] = dept.rejoin; // Added for rejoin field
         return acc;
       }, {});
 
       form.setFieldsValue(deptFields);
     }
-  }, [form]); // Added `depts` to dependencies
+  }, [form]);
 
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        // Fetch options from your API or data source
         const options = await fetchExamOptions();
 
-        // Create a mapping of year-attached names to their options
         const optionsMap = Object.entries(options).reduce(
           (map, [deptKey, opts]) => {
             const deptNameWithYear = calculateYear(
@@ -174,19 +172,15 @@ const BatchesForm = () => {
           {}
         );
 
-        // Update departments with options based on matching names
         const updatedDepts = depts.map((dept) => {
-          // Calculate the department name with the current year
           const deptNameWithYear = calculateYear(selectedYear, dept, 2024).name;
           return {
             ...dept,
-            options: optionsMap[deptNameWithYear] || [], // Use default empty array if no options found
+            options: optionsMap[deptNameWithYear] || [],
           };
         });
 
-        // Set the updated depts state
         setDepts((prevDepts) => {
-          // Map over previous depts to update their options
           const updatedDeptsMap = updatedDepts.reduce((map, dept) => {
             map[dept.name] = dept;
             return map;
@@ -241,7 +235,7 @@ const BatchesForm = () => {
           />
         </Form.Item>
 
-        {depts.map((dept, i) => (
+        {selectedYear && selectedYear!="null"  && depts.map((dept, i) => (
           <div key={i}>
             <h3>{dept.name}</h3>
             <Form.Item name={dept.name} initialValue={dept.initialValues}>
@@ -302,7 +296,9 @@ const BatchesForm = () => {
                   mode="tags"
                   placeholder="Dropped Students"
                   style={{ width: "400px", marginRight: "40px" }}
-                  onChange={""}
+                  onChange={(value) =>
+                    handleFieldChange("drop", value, dept.name)
+                  }
                   options={[]}
                 />
               </Form.Item>
@@ -315,7 +311,9 @@ const BatchesForm = () => {
                   mode="tags"
                   placeholder="Rejoined Students"
                   style={{ width: "400px", marginRight: "40px" }}
-                  onChange={""}
+                  onChange={(value) =>
+                    handleFieldChange("rejoin", value, dept.name)
+                  }
                   options={[]}
                 />
               </Form.Item>
@@ -327,7 +325,7 @@ const BatchesForm = () => {
         <Form.Item>
           <Popconfirm
             onConfirm={submitForm}
-            title="Current year exams data will be overwritten !"
+            title="Current year exams data will be overwritten!"
             description="Are you sure you want to submit?"
             icon={<QuestionCircleOutlined style={{ color: "red" }} />}
           >

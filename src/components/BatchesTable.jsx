@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
-import { EditOutlined } from "@ant-design/icons";
 
 
 const BatchesTable = () => {
@@ -55,22 +54,17 @@ const BatchesTable = () => {
     },
     {
       name: "Dropped Students",
-      selector: (row) => "NIL",
+      selector: (row) => row.drop?.join(" , ") || "NIL",
       sortable: true,
       wrap: true,
     },
     {
       name: "Rejoined Students",
-      selector: (row) => "NIL",
+      selector: (row) => row.rejoin?.join(" , ") || "NIL",
       sortable: true,
       wrap: true,
     },
-    {
-      name: "Edit",
-      selector: (row) => <EditOutlined />,
-      sortable: true,
-      wrap: true,
-    },
+
   ];
 
   const disabledDate = (currentDate) => {
