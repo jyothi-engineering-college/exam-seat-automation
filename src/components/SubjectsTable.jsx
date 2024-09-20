@@ -1,4 +1,3 @@
-import { EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
@@ -55,13 +54,7 @@ const SubjectsTable = () => {
       selector: (row) => row.CREDIT,
       sortable: true,
       wrap: true,
-    },
-    {
-      name: "Edit",
-      selector: (row) => <EditOutlined />,
-      sortable: true,
-      wrap: true,
-    },
+    }
   ];
   let props = {
     tableName: "Subjects",

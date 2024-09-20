@@ -4,101 +4,26 @@ import { useAppContext } from "../context/AppContext";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { InputNumber } from "antd";
-import { calculateYear } from "../utils/yearCalculator";
 import FlexContainer from "../components/FlexContainer";
 
 const BatchesForm = () => {
   const navigate = useNavigate();
   const { batchesForm, fetchExamOptions } = useAppContext();
-  const initialState = {
-    depts: [
-      {
-        name: "CE",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-      {
-        name: "CS",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-      {
-        name: "ME",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-      {
-        name: "AD",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-      {
-        name: "EE",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-      {
-        name: "EC",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-      {
-        name: "CC",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-      {
-        name: "MC",
-        options: [],
-        initialValues: [],
-        reg: 0,
-        let: 0,
-        drop: [],
-        rejoin: [],
-      },
-    ],
-  };
 
-  const [depts, setDepts] = useState(initialState.depts);
+  const [depts, setDepts] = useState([]); // Holds the department data
   const [selectedYear, setSelectedYear] = useState(null);
   const hasLoaded = useRef(false);
   const [form] = Form.useForm();
 
-  const years = (value) => {
-    const currentYear = 2024 % 100;
+  // Handling year selection
+  const handleYearChange = async (value) => {
     setSelectedYear(value);
-
-    setDepts((prevDepts) =>
-      prevDepts.map((dept) => calculateYear(value, dept, currentYear))
-    );
+    try {
+      const fetchedDepts = await fetchExamOptions(value); // Fetch new data based on the selected year
+      setDepts(fetchedDepts);
+    } catch (error) {
+      console.error("Error fetching options:", error);
+    }
   };
 
   const handleFieldChange = (field, value, deptName) => {
@@ -115,13 +40,13 @@ const BatchesForm = () => {
       localStorage.removeItem("depts");
       localStorage.removeItem("selectedYear");
 
-      setDepts(initialState.depts);
+      setDepts([]);
       setSelectedYear(null);
-
       form.resetFields();
+
       setTimeout(() => navigate("/batches"), 600);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error(error);
     }
   };
 
@@ -135,51 +60,11 @@ const BatchesForm = () => {
 
     if (storedYear) {
       setSelectedYear(storedYear);
-      years(storedYear);
-
       form.setFieldsValue({ Year: storedYear });
-
-      const deptFields = depts.reduce((acc, dept) => {
-        acc[dept.name] = dept.initialValues;
-        acc[`reg${dept.name}`] = dept.reg;
-        acc[`let${dept.name}`] = dept.let;
-        acc[`drop${dept.name}`] = dept.drop;
-        acc[`rejoin${dept.name}`] = dept.rejoin;
-        return acc;
-      }, {});
-
-      form.setFieldsValue(deptFields);
     }
   }, [form]);
 
-  // Fetch options and initialValues from the backend
-  useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        // Fetch the department data from the backend
-        const fetchedDepts = await fetchExamOptions(); // e.g. fetchedDepts = {"24AD": [...], "24CS": [...]}
-        console.log("Fetched depts:", fetchedDepts);
-
-        // Create an array of departments based on the keys of fetchedDepts
-        const updatedDepts = Object.keys(fetchedDepts).map((key) => {
-          return {
-            name: key, // Use the key as the name (e.g. "24AD", "24CS")
-            initialValues: fetchedDepts[key] || [], // Set initial values from fetched data
-            options: fetchedDepts[key] || [], // Set options from fetched data
-          };
-        });
-
-        setDepts(updatedDepts); // Update the state with the new data
-      } catch (error) {
-        console.error("Error loading options:", error);
-      }
-    };
-
-    if (selectedYear) {
-      loadOptions(); // Trigger the data fetch and update when a year is selected
-    }
-  }, [selectedYear, fetchExamOptions]);
-
+  // Save to localStorage
   useEffect(() => {
     if (hasLoaded.current) {
       localStorage.setItem("depts", JSON.stringify(depts));
@@ -207,7 +92,7 @@ const BatchesForm = () => {
           <Select
             style={{ width: 120 }}
             placeholder="Select Year"
-            onChange={years}
+            onChange={handleYearChange}
             options={[
               { value: "first_years", label: "First Year" },
               { value: "second_years", label: "Second Year" },
@@ -218,7 +103,6 @@ const BatchesForm = () => {
         </Form.Item>
 
         {selectedYear &&
-          selectedYear !== "null" &&
           depts.map((dept, i) => (
             <div key={i}>
               <h3>{dept.name}</h3>
@@ -236,6 +120,7 @@ const BatchesForm = () => {
                   }))}
                 />
               </Form.Item>
+
               <FlexContainer>
                 <Form.Item
                   label="Regular Strength"
@@ -254,6 +139,7 @@ const BatchesForm = () => {
                     }
                   />
                 </Form.Item>
+
                 <Form.Item
                   label="LET Strength"
                   name={`let${dept.name}`}
@@ -271,6 +157,7 @@ const BatchesForm = () => {
                     }
                   />
                 </Form.Item>
+
                 <Form.Item
                   label="Dropped Students"
                   name={`drop${dept.name}`}
@@ -286,6 +173,7 @@ const BatchesForm = () => {
                     options={[]}
                   />
                 </Form.Item>
+
                 <Form.Item
                   label="Rejoined Students"
                   name={`rejoin${dept.name}`}

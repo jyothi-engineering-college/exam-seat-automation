@@ -2,6 +2,7 @@ import React, { useReducer, useContext, createContext } from "react";
 import reducer from "./reducers";
 import {
   LOGOUT_USER,
+  SET_ACADEMIC_YEAR,
   SET_ALLOCATED_DATA,
   SET_ALLOCATION_DETAILS,
   SET_SINGLE_CLASS,
@@ -51,7 +52,7 @@ const initialState = {
   classNames: [],
   singleClassView: [],
   selectedSlotName: "",
-  academicYear: dayjs().year(),
+  academicYear: null,
 };
 
 const AppContext = createContext();
@@ -125,6 +126,46 @@ const AppProvider = ({ children }) => {
     removeUserFromTheLocalStorage();
   };
 
+  // const batchesForm = async (depts) => {
+  //   console.log(depts);
+
+  //   showAlert("loading", "Updating Batch Details ...");
+  //   const SubdocRef = doc(firestore, "DeptDetails", "Exams");
+  //   const LetdocRef = doc(firestore, "DeptDetails", "LetStrength");
+  //   const RegdocRef = doc(firestore, "DeptDetails", "RegularStrength");
+  //   const dropdocRef = doc(firestore, "DeptDetails", "Dropped");
+  //   const rejoindocRef = doc(firestore, "DeptDetails", "Rejoined");
+
+  //   const getDeptFields = (key) =>
+  //     depts.reduce(
+  //       (acc, dept) => ({
+  //         ...acc,
+  //         [dept.name]: dept[key],
+  //       }),
+  //       {}
+  //     );
+
+  //   const SubFields = getDeptFields("initialValues");
+  //   const RegFields = getDeptFields("reg");
+  //   const LetFields = getDeptFields("let");
+  //   const dropFields = getDeptFields("drop");
+  //   const rejoinFields = getDeptFields("rejoin");
+  //   console.log(RegFields);
+
+  //   try {
+  //     await setDoc(SubdocRef, SubFields, { merge: true });
+  //     await setDoc(RegdocRef, RegFields, { merge: true });
+  //     await setDoc(LetdocRef, LetFields, { merge: true });
+  //     await setDoc(dropdocRef, dropFields, { merge: true });
+  //     await setDoc(rejoindocRef, rejoinFields, { merge: true });
+
+  //     showAlert("success", "Batch Details Updated Successfully !");
+  //   } catch (error) {
+  //     showAlert("error", error.message);
+  //     throw new Error(`${error.message}`);
+  //   }
+  // };
+
   const batchesForm = async (depts) => {
     showAlert("loading", "Updating Batch Details ...");
     const SubdocRef = doc(firestore, "DeptDetails", "Exams");
@@ -134,26 +175,35 @@ const AppProvider = ({ children }) => {
     const rejoindocRef = doc(firestore, "DeptDetails", "Rejoined");
 
     const getDeptFields = (key) =>
-      depts.reduce(
-        (acc, dept) => ({
-          ...acc,
-          [dept.name]: dept[key],
-        }),
-        {}
-      );
+      depts.reduce((acc, dept) => {
+        if (dept[key] !== undefined) {
+          // Only include defined fields
+          return {
+            ...acc,
+            [dept.name]: dept[key],
+          };
+        }
+        return acc;
+      }, {});
 
     const SubFields = getDeptFields("initialValues");
     const RegFields = getDeptFields("reg");
     const LetFields = getDeptFields("let");
     const dropFields = getDeptFields("drop");
     const rejoinFields = getDeptFields("rejoin");
+    console.log(RegFields);
 
     try {
-      await setDoc(SubdocRef, SubFields, { merge: true });
-      await setDoc(RegdocRef, RegFields, { merge: true });
-      await setDoc(LetdocRef, LetFields, { merge: true });
-      await setDoc(dropdocRef, dropFields, { merge: true });
-      await setDoc(rejoindocRef, rejoinFields, { merge: true });
+      if (Object.keys(SubFields).length > 0)
+        await setDoc(SubdocRef, SubFields, { merge: true });
+      if (Object.keys(RegFields).length > 0)
+        await setDoc(RegdocRef, RegFields, { merge: true });
+      if (Object.keys(LetFields).length > 0)
+        await setDoc(LetdocRef, LetFields, { merge: true });
+      if (Object.keys(dropFields).length > 0)
+        await setDoc(dropdocRef, dropFields, { merge: true });
+      if (Object.keys(rejoinFields).length > 0)
+        await setDoc(rejoindocRef, rejoinFields, { merge: true });
 
       showAlert("success", "Batch Details Updated Successfully !");
     } catch (error) {
@@ -161,9 +211,8 @@ const AppProvider = ({ children }) => {
       throw new Error(`${error.message}`);
     }
   };
-
   const fetchBatches = async () => {
-    showAlert("loading", "Fetching Batch Details ...");
+    // showAlert("loading", "Fetching Batch Details ...");
     const examsRef = doc(firestore, "DeptDetails", "Exams");
     const regStrengthRef = doc(firestore, "DeptDetails", "RegularStrength");
     const letStrengthRef = doc(firestore, "DeptDetails", "LetStrength");
@@ -220,44 +269,108 @@ const AppProvider = ({ children }) => {
   const fetchAcademicYear = async () => {
     const docRef = doc(firestore, "DeptDetails", "AcademicYear");
     try {
-      let year = dayjs().year();
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.year !== undefined) {
-          year = data.year;
+        const yearData = docSnap.data();
+        const year = yearData.academicYear;
+
+        if (year !== undefined) {
+          dispatch({
+            type: SET_ACADEMIC_YEAR,
+            payload: { academicYear: dayjs(`${year}-01-01`) },
+          });
         } else {
-          await setDoc(docRef, { year });
+          await setDoc(docRef, { academicYear: dayjs().year() });
+          dispatch({
+            type: SET_ACADEMIC_YEAR,
+            payload: { academicYear: dayjs() },
+          });
         }
       } else {
-        await setDoc(docRef, { year });
+        await setDoc(docRef, { academicYear: dayjs().year() });
+        dispatch({
+          type: SET_ACADEMIC_YEAR,
+          payload: { academicYear: dayjs() },
+        });
       }
-      return year;
     } catch (error) {
       console.error("Error fetching document: ", error);
       return [];
     }
   };
+  const updateAcademicYear = async (academicYear, prevYear) => {
+    showAlert("loading", `Updating year to ${academicYear.year()}`);
 
-  const updateAcademicYear = async (year) => {
     const docRef = doc(firestore, "DeptDetails", "AcademicYear");
 
     try {
       const examsDocRef = doc(db, "DeptDetails", "Exams");
-      const examsDocSnap = await getDoc(examsDocRef);
+      const letDocRef = doc(db, "DeptDetails", "LetStrength");
+      const regDocRef = doc(db, "DeptDetails", "RegularStrength");
+      const dropDocRef = doc(db, "DeptDetails", "Dropped");
+      const rejoinDocRef = doc(db, "DeptDetails", "Rejoined");
 
-      if (examsDocSnap.exists()) {
-        const examsData = examsDocSnap.data();
-        console.log(examsData);
-      }
-      showAlert("loading", `Updating year to ${year}`);
+      const docRefs = [
+        examsDocRef,
+        letDocRef,
+        regDocRef,
+        dropDocRef,
+        rejoinDocRef,
+      ];
 
-      await updateDoc(docRef, { year });
-      showAlert("success", `Academic year changed to ${year}`);
-      return;
+      const updateCollection = async (docRef) => {
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && Object.keys(docSnap.data()).length > 0) {
+          const data = docSnap.data();
+          const currentYear = academicYear.year();
+          const yearSuffixes = Object.keys(data).map((key) => key.slice(0, 2));
+          const biggestYearSuffix = yearSuffixes.reduce((max, suffix) =>
+            suffix > max ? suffix : max
+          );
+
+          const updatedData = {};
+
+          for (const key in data) {
+            const yearSuffix = key.slice(0, 2);
+            const programCode = key.slice(2);
+            const yearDifference =
+              parseInt(biggestYearSuffix) - parseInt(yearSuffix);
+
+            const newYearSuffix =
+              yearDifference >= 0 && yearDifference <= 3
+                ? (currentYear - yearDifference).toString().slice(-2)
+                : yearSuffix;
+
+            updatedData[newYearSuffix + programCode] = data[key];
+          }
+
+          await setDoc(docRef, updatedData, { merge: false });
+          console.log(`${docRef.id} data replaced:`, updatedData);
+        }
+      };
+
+      // Update all collections
+      await Promise.all(docRefs.map(updateCollection));
+
+      // Update academic year
+      await updateDoc(docRef, { academicYear: academicYear.year() });
+
+      dispatch({
+        type: SET_ACADEMIC_YEAR,
+        payload: { academicYear },
+      });
+      localStorage.removeItem("depts");
+      localStorage.removeItem("selectedYear");
+
+      showAlert("success", `Academic year changed to ${academicYear.year()}`);
     } catch (error) {
+      console.log(error);
+
+      dispatch({
+        type: SET_ACADEMIC_YEAR,
+        payload: { academicYear: prevYear },
+      });
       showAlert("error", error.message);
-      throw new Error(error.message);
     }
   };
 
@@ -528,77 +641,56 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const fetchExamOptions = async () => {
+  const fetchExamOptions = async (selectedYear) => {
     showAlert("loading", "Fetching Options ...");
     try {
-      const academicYearRef = doc(db, "DeptDetails", "AcademicYear");
-      const academicYearSnap = await getDoc(academicYearRef);
+      const academicYearSnap = await getDoc(
+        doc(db, "DeptDetails", "AcademicYear")
+      );
+      const yearMap = {
+        first_years: ["S1", "S2"],
+        second_years: ["S3", "S4"],
+        third_years: ["S5", "S6"],
+        fourth_years: ["S7", "S8"],
+      };
+      const fetchArray = yearMap[selectedYear] || [];
 
-      const subjectsRef = collection(db, "Subjects");
-      const subjectSnap = await getDocs(subjectsRef);
-
-      const depts = ["CS", "EE", "ME", "CE", "EC", "CC", "AD", "RA", "MC"];
-
-      let { year } = academicYearSnap.data();
-      year = year.toString().substring(2, 4);
-
+      const subjectSnap = await getDocs(
+        query(collection(db, "Subjects"), where("SEM", "in", fetchArray))
+      );
+      let academicYear = academicYearSnap
+        .data()
+        .academicYear.toString()
+        .substring(2, 4);
       const deptDetails = {};
 
-      // Initialize deptDetails arrays for each semester
+      // Initialize deptDetails arrays
       subjectSnap.forEach((doc) => {
-        const data = doc.data();
-        const sem = data["SEM"];
-        const dept = data["DEPT"].substring(0, 2); // Remove the year prefix from the department name
+        const { SEM: sem, DEPT: dept } = doc.data();
 
-        // Initialize deptDetails arrays
-        if (sem == "S1" || sem == "S2") deptDetails[`${year}${dept}`] = [];
-        else if (sem == "S3" || sem == "S4")
-          deptDetails[`${year - 1}${dept}`] = [];
-        else if (sem == "S5" || sem == "S6")
-          deptDetails[`${year - 2}${dept}`] = [];
-        else if (sem == "S7" || sem == "S8")
-          deptDetails[`${year - 3}${dept}`] = [];
+        const yearOffset = Math.floor((parseInt(sem[1]) - 1) / 2);
+        deptDetails[`${academicYear - yearOffset}${dept.substring(0, 2)}`] = [];
       });
 
-      // Populate deptDetails based on semester range
-      // Populate deptDetails based on semester range
-      depts.forEach((dept) => {
-        subjectSnap.forEach((doc) => {
-          const docId = doc.id;
-          const courseCode = doc.data()["COURSE CODE"]; // Extract COURSE CODE
-
-          // For S1 and S2
-          if (
-            docId.startsWith(`S1_${dept}`) ||
-            docId.startsWith(`S2_${dept}`)
-          ) {
-            deptDetails[`${year}${dept}`].push(courseCode);
-          }
-          // For S3 and S4
-          else if (
-            docId.startsWith(`S3_${dept}`) ||
-            docId.startsWith(`S4_${dept}`)
-          ) {
-            deptDetails[`${year - 1}${dept}`].push(courseCode);
-          }
-          // For S5 and S6
-          else if (
-            docId.startsWith(`S5_${dept}`) ||
-            docId.startsWith(`S6_${dept}`)
-          ) {
-            deptDetails[`${year - 2}${dept}`].push(courseCode);
-          }
-          // For S7 and S8
-          else if (
-            docId.startsWith(`S7_${dept}`) ||
-            docId.startsWith(`S8_${dept}`)
-          ) {
-            deptDetails[`${year - 3}${dept}`].push(courseCode);
-          }
-        });
+      // Populate deptDetails
+      subjectSnap.forEach((doc) => {
+        const { SEM: sem, DEPT: dept, "COURSE CODE": courseCode } = doc.data();
+        const yearOffset = Math.floor((parseInt(sem[1]) - 1) / 2);
+        const key = `${academicYear - yearOffset}${dept.substring(0, 2)}`;
+        if (!deptDetails[key].includes(courseCode)) {
+          deptDetails[key].push(courseCode);
+        }
       });
 
-      return deptDetails;
+      return Object.keys(deptDetails).map((key) => ({
+        name: key,
+        options: deptDetails[key],
+        initialValues: deptDetails[key],
+        reg: 0,
+        let: 0,
+        drop: [],
+        rejoin: [],
+      }));
     } catch (error) {
       console.error("Error fetching options:", error);
       throw error;

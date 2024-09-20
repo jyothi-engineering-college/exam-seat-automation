@@ -42,7 +42,7 @@ const TableContainer = ({
   filteredResults,
   searchTerm,
   setSearchTerm,
-  year,
+  academicYear,
   yearChanged,
   disabledDate,
 }) => {
@@ -67,16 +67,17 @@ const TableContainer = ({
             }}
           >
             <Space>
-              {year && (
+              <>
                 <DatePicker
                   size="large"
                   placeholder="Select Academic Year"
                   disabledDate={disabledDate}
-                  value={year}
+                  defaultValue={academicYear}
+                  value={academicYear}
                   onChange={yearChanged}
                   picker="year"
                 />
-              )}
+              </>
             </Space>
           </ConfigProvider>
 

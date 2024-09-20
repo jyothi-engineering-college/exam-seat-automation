@@ -4,15 +4,14 @@ import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
 
-
 const BatchesTable = () => {
-  const { fetchBatches, fetchAcademicYear, updateAcademicYear } =
+  const { fetchBatches, fetchAcademicYear, updateAcademicYear, academicYear } =
     useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [year, setYear] = useState(); 
 
+  // Fetch batch data once on mount
   useEffect(() => {
     fetchBatches().then((data) => {
       setData(data);
@@ -20,10 +19,8 @@ const BatchesTable = () => {
   }, [fetchBatches]);
 
   useEffect(() => {
-    fetchAcademicYear().then((year) => {
-      setYear(dayjs(`${year}-01-01`));
-    });
-  }, [fetchAcademicYear]);
+    fetchAcademicYear();    
+  }, []);
 
   const filteredResults = filteredData(data, searchTerm);
 
@@ -47,7 +44,7 @@ const BatchesTable = () => {
       wrap: true,
     },
     {
-      name: "Let Strength ",
+      name: "Let Strength",
       selector: (row) => row.letStrength || 0,
       sortable: true,
       wrap: true,
@@ -64,7 +61,6 @@ const BatchesTable = () => {
       sortable: true,
       wrap: true,
     },
-
   ];
 
   const disabledDate = (currentDate) => {
@@ -73,18 +69,23 @@ const BatchesTable = () => {
   };
 
   const yearChanged = async (date) => {
-    const prevYear = year;
-    setYear(date);
-    try {
-      await updateAcademicYear(date.year());
-    } catch (error) {
-      setYear(prevYear);
-    }
+    await updateAcademicYear(date, academicYear);
   };
-  let props={tableName:"Batches",columns,filteredResults,searchTerm,setSearchTerm,year,yearChanged,disabledDate}
+
+  let props = {
+    tableName: "Batches",
+    columns,
+    filteredResults,
+    searchTerm,
+    setSearchTerm,
+    academicYear,
+    yearChanged,
+    disabledDate,
+  };
+
   return (
     <>
-     <TableContainer {...props} />
+      <TableContainer {...props} />
     </>
   );
 };
