@@ -26,9 +26,14 @@ const ClassButton = () => {
           </Button>
         ))
       ) : (
-        <center>
-          <Alert message="No classes available" type="error"></Alert>
-        </center>
+        <>
+          <h3 className="tdhd">Alloted Classes</h3>
+          <center>
+            <Alert message="No classes available" type="error"></Alert>
+            <br />
+            <br />
+          </center>
+        </>
       )}
     </>
   );

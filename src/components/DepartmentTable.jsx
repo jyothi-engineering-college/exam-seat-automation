@@ -50,7 +50,6 @@ const DepartmentTable = () => {
       selector: (row) => (
         <div dangerouslySetInnerHTML={{ __html: formatCounts(row.rooms) }} />
       ),
-      sortable: true,
       wrap: true,
     },
     {
@@ -58,7 +57,6 @@ const DepartmentTable = () => {
       selector: (row) => (
         <div dangerouslySetInnerHTML={{ __html: formatItems(row.rollNums) }} />
       ),
-      sortable: true,
       wrap: true,
     },
     {
@@ -66,7 +64,6 @@ const DepartmentTable = () => {
       selector: (row) => (
         <div dangerouslySetInnerHTML={{ __html: formatCounts(row.count) }} />
       ),
-      sortable: true,
       wrap: true,
     },
   ];

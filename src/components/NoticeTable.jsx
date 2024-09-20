@@ -56,7 +56,6 @@ const NoticeTable = () => {
       selector: (row) => (
         <div dangerouslySetInnerHTML={{ __html: formatCount(row.count) }} />
       ),
-      sortable: true,
       wrap: true,
     },
   ];

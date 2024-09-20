@@ -6,9 +6,11 @@ import { useAppContext } from "../context/AppContext";
 import FlexContainer from "./FlexContainer";
 import { useLocation } from "react-router-dom";
 import queryString from "query-string";
+import { useNavigate } from "react-router-dom";
 
 const FileContainer = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { destination } = queryString.parse(location.search);
 
   const [workbook, setWorkbook] = useState(null);
@@ -36,19 +38,24 @@ const FileContainer = () => {
   };
 
   const handleUpload = async () => {
-    if (workbook) {
-      setUploading(false);
-      cancelToken.current = true; 
-      if (destination === "subjectsform")
-        await uploadSubFile(workbook, updateProgress, cancelToken);
-      else if (destination === "examhallform")
-        await uploadExamhallFile(workbook, updateProgress, cancelToken);
+    try {
+      if (workbook) {
+        setUploading(false);
+        cancelToken.current = true;
+        if (destination === "subjectsform") {
+          await uploadSubFile(workbook, updateProgress, cancelToken);
+          setTimeout(() => navigate("/subjects"), 600);
+        } else if (destination === "examhallform") {
+          await uploadExamhallFile(workbook, updateProgress, cancelToken);
+          setTimeout(() => navigate("/exam-halls"), 600);
+        }
+        setUploading(true);
 
-      setUploading(true);
-      console.log(destination);
-
-      setProgress(0);
-      setWorkbook(null);
+        setProgress(0);
+        setWorkbook(null);
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 

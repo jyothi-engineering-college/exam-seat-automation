@@ -4,12 +4,14 @@ import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
 
 const SubjectsTable = () => {
-  const { fetchSubjects } = useAppContext();
+  const { fetchSubjects ,academicYear} = useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    console.log(academicYear);
+    
     fetchSubjects().then((data) => {
       setData(data);
     });

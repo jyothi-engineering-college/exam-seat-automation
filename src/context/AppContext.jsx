@@ -494,9 +494,9 @@ const AppProvider = ({ children }) => {
         showAlert("warning", "Upload Cancelled !");
       }
     } catch (error) {
-      console.error(error);
       updateProgress(0);
       showAlert("error", error.message);
+      throw new Error(`${error.message}`);
     }
   };
 
@@ -706,7 +706,7 @@ const AppProvider = ({ children }) => {
       const slotsSnap = await getDoc(slotsDocRef);
       const datetimeSnap = await getDoc(datetimeDocRef);
 
-      if (slotsSnap.exists() && datetimeSnap.exists()) {
+      if (slotsSnap.exists()) {
         const slotsData = slotsSnap.data();
         console.log(slotsData, "slotsData");
 
@@ -714,7 +714,7 @@ const AppProvider = ({ children }) => {
 
         const formattedData = Object.keys(slotsData).map((slotKey) => {
           const exams = slotsData[slotKey] || [];
-          const date = datetimeData[slotKey] || null;
+          const date = datetimeData ? datetimeData[slotKey] : null;
 
           let formattedDate;
           if (Array.isArray(date)) {
@@ -777,13 +777,16 @@ const AppProvider = ({ children }) => {
         }
       });
 
+      // Create or update Slots document
       if (Object.keys(slotsUpdates).length > 0) {
-        await updateDoc(slotsDocRef, slotsUpdates);
+        await setDoc(slotsDocRef, slotsUpdates, { merge: true });
       }
 
+      // Create or update DateTime document
       if (Object.keys(datetimeUpdates).length > 0) {
-        await updateDoc(datetimeDocRef, datetimeUpdates);
+        await setDoc(datetimeDocRef, datetimeUpdates, { merge: true });
       }
+
       showAlert("success", "Slots Updated Successfully !");
     } catch (error) {
       showAlert("error", error.message);

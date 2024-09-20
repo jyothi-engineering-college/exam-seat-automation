@@ -1,4 +1,4 @@
-import { Select } from "antd";
+import { Select, Collapse, ConfigProvider } from "antd"; // Import ConfigProvider
 import FlexContainer from "../components/FlexContainer";
 import { useAppContext } from "../context/AppContext";
 import { useEffect, useState } from "react";
@@ -22,7 +22,6 @@ const TodayExam = () => {
   const [slotNames, setSlotNames] = useState([]);
 
   const submitSlot = async (slot) => {
-    
     await fetchExamData(slots[slot], slot);
   };
 
@@ -66,35 +65,64 @@ const TodayExam = () => {
     });
   }, []);
 
-  return (
-    <>
-      <FlexContainer>
-        <div>
-          <h3 className="tdhd">Today's Exam</h3>
-          <div className="underline"></div>
+  const items = [
+    {
+      key: "1",
+      label: "Today's Exams",
+      children: (
+        <div className="tcwrap">
+          {examToday.map((exam, index) => (
+            <div key={index} className="tcard">
+              <img src="../book.svg" alt="hi" />
+              <div className="cdet">
+                <h3>{exam}</h3>
+                <p>Slot {selectedSlotName}</p>
+              </div>
+            </div>
+          ))}
         </div>
-        <div style={{ marginLeft: "450px" }}>
+      ),
+    },
+  ];
+
+  return (
+    <ConfigProvider
+      theme={{
+        token: {
+          colorBgContainer: "#f0f9ff",
+        },
+      }}
+    >
+      <>
+        <center>
+          <label htmlFor="slot-select">Select Slot : </label>
           <Select
+            id="slot-select"
             defaultValue={selectedSlotName}
-            style={{ width: 120 }}
+            style={{
+              width: 250,
+              borderColor: "#f0f9ff",
+            }}
             placeholder="Select Slot"
             onChange={submitSlot}
-            options={slotNames.map((slot) => ({ value: slot, label: slot }))}
+            options={slotNames.map((slot) => ({
+              value: slot,
+              label: slot,
+            }))}
+            dropdownStyle={{
+              backgroundColor: "#f0f9ff",
+            }}
           />
-        </div>
-      </FlexContainer>
-      <div className="tcwrap">
-        {examToday.map((exam, index) => (
-          <div key={index} className="tcard">
-            <img src="../book.svg" alt="hi" />
-            <div className="cdet">
-              <h3>{exam}</h3>
-              <p>Slot {selectedSlotName}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+        </center>
+        <br />
+        <Collapse
+          defaultActiveKey={[]}
+          items={items}
+          collapsible="header"
+          style={{ width: "97%", margin: "0 auto" }} 
+        />
+      </>
+    </ConfigProvider>
   );
 };
 
