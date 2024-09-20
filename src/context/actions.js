@@ -8,13 +8,4 @@ export const SET_SLOTS = "SET_SLOTS";
 export const SET_ALLOCATION_DETAILS = "SET_ALLOCATION_DETAILS";
 export const SET_ALLOCATED_DATA = "SET_ALLOCATED_DATA";
 export const SET_SINGLE_CLASS = "SET_SINGLE_CLASS";
-
-//  classCapacity: {},
-//   deptStrength: {},
-//   letStrength: {},
-//   exams: {},
-//   sup: {},
-//   drop: {},
-//   rejoin: {},
-//   slots: {},
-//   examToday: [],
+export const SET_ACADEMIC_YEAR = "SET_ACADEMIC_YEAR";

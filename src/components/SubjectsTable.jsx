@@ -1,16 +1,17 @@
-import { EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
 
 const SubjectsTable = () => {
-  const { fetchSubjects } = useAppContext();
+  const { fetchSubjects ,academicYear} = useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    console.log(academicYear);
+    
     fetchSubjects().then((data) => {
       setData(data);
     });
@@ -55,13 +56,7 @@ const SubjectsTable = () => {
       selector: (row) => row.CREDIT,
       sortable: true,
       wrap: true,
-    },
-    {
-      name: "Edit",
-      selector: (row) => <EditOutlined />,
-      sortable: true,
-      wrap: true,
-    },
+    }
   ];
   let props = {
     tableName: "Subjects",

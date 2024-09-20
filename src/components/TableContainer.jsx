@@ -42,7 +42,7 @@ const TableContainer = ({
   filteredResults,
   searchTerm,
   setSearchTerm,
-  year,
+  academicYear,
   yearChanged,
   disabledDate,
 }) => {
@@ -56,30 +56,32 @@ const TableContainer = ({
             </center>
           </div>
 
-          <ConfigProvider
-            theme={{
-              token: {
-                colorText: "#07314a",
-                fontWeightStrong: 800,
-                colorPrimary: "#07314a",
-                colorBgElevated: "#f0f9ff",
-              },
-            }}
-          >
-            <Space>
-              {year && (
-                <DatePicker
-                  size="large"
-                  placeholder="Select Academic Year"
-                  disabledDate={disabledDate}
-                  value={year}
-                  onChange={yearChanged}
-                  picker="year"
-                />
-              )}
-            </Space>
-          </ConfigProvider>
-
+          {academicYear !=null && (
+            <ConfigProvider
+              theme={{
+                token: {
+                  colorText: "#07314a",
+                  fontWeightStrong: 800,
+                  colorPrimary: "#07314a",
+                  colorBgElevated: "#f0f9ff",
+                },
+              }}
+            >
+              <Space>
+                <>
+                  <DatePicker
+                    size="large"
+                    placeholder="Select Academic Year"
+                    disabledDate={disabledDate}
+                    defaultValue={academicYear}
+                    value={academicYear}
+                    onChange={yearChanged}
+                    picker="year"
+                  />
+                </>
+              </Space>
+            </ConfigProvider>
+          )}
           <div className="search-container">
             <Input
               size="large"
