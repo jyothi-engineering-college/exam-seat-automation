@@ -111,14 +111,12 @@ const BatchesForm = () => {
 
   const submitForm = async () => {
     try {
-      
       await batchesForm(depts);
-
       localStorage.removeItem("depts");
       localStorage.removeItem("selectedYear");
 
       setDepts(initialState.depts);
-      setSelectedYear(null); 
+      setSelectedYear(null);
 
       form.resetFields();
       setTimeout(() => navigate("/batches"), 600);
@@ -145,8 +143,8 @@ const BatchesForm = () => {
         acc[dept.name] = dept.initialValues;
         acc[`reg${dept.name}`] = dept.reg;
         acc[`let${dept.name}`] = dept.let;
-        acc[`drop${dept.name}`] = dept.drop; // Added for drop field
-        acc[`rejoin${dept.name}`] = dept.rejoin; // Added for rejoin field
+        acc[`drop${dept.name}`] = dept.drop;
+        acc[`rejoin${dept.name}`] = dept.rejoin;
         return acc;
       }, {});
 
@@ -154,48 +152,32 @@ const BatchesForm = () => {
     }
   }, [form]);
 
+  // Fetch options and initialValues from the backend
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const options = await fetchExamOptions();
+        // Fetch the department data from the backend
+        const fetchedDepts = await fetchExamOptions(); // e.g. fetchedDepts = {"24AD": [...], "24CS": [...]}
+        console.log("Fetched depts:", fetchedDepts);
 
-        const optionsMap = Object.entries(options).reduce(
-          (map, [deptKey, opts]) => {
-            const deptNameWithYear = calculateYear(
-              selectedYear,
-              { name: deptKey },
-              2024
-            ).name;
-            map[deptNameWithYear] = opts;
-            return map;
-          },
-          {}
-        );
-
-        const updatedDepts = depts.map((dept) => {
-          const deptNameWithYear = calculateYear(selectedYear, dept, 2024).name;
+        // Create an array of departments based on the keys of fetchedDepts
+        const updatedDepts = Object.keys(fetchedDepts).map((key) => {
           return {
-            ...dept,
-            options: optionsMap[deptNameWithYear] || [],
+            name: key, // Use the key as the name (e.g. "24AD", "24CS")
+            initialValues: fetchedDepts[key] || [], // Set initial values from fetched data
+            options: fetchedDepts[key] || [], // Set options from fetched data
           };
         });
 
-        setDepts((prevDepts) => {
-          const updatedDeptsMap = updatedDepts.reduce((map, dept) => {
-            map[dept.name] = dept;
-            return map;
-          }, {});
-
-          return prevDepts.map(
-            (prevDept) => updatedDeptsMap[prevDept.name] || prevDept
-          );
-        });
+        setDepts(updatedDepts); // Update the state with the new data
       } catch (error) {
         console.error("Error loading options:", error);
       }
     };
 
-    loadOptions();
+    if (selectedYear) {
+      loadOptions(); // Trigger the data fetch and update when a year is selected
+    }
   }, [selectedYear, fetchExamOptions]);
 
   useEffect(() => {
@@ -235,92 +217,94 @@ const BatchesForm = () => {
           />
         </Form.Item>
 
-        {selectedYear && selectedYear!="null"  && depts.map((dept, i) => (
-          <div key={i}>
-            <h3>{dept.name}</h3>
-            <Form.Item name={dept.name} initialValue={dept.initialValues}>
-              <Select
-                mode="tags"
-                style={{ width: "200%" }}
-                placeholder={`Add Exams for ${dept.name}`}
-                onChange={(value) =>
-                  handleFieldChange("initialValues", value, dept.name)
-                }
-                options={dept.options.map((exam) => ({
-                  value: exam,
-                  label: exam,
-                }))}
-              />
-            </Form.Item>
-            <FlexContainer>
-              <Form.Item
-                label="Regular Strength"
-                name={`reg${dept.name}`}
-                initialValue={dept.reg}
-              >
-                <InputNumber
-                  size="large"
-                  min={1}
-                  max={65}
-                  placeholder="Regular Strength"
-                  style={{ width: "200px", marginRight: "40px" }}
-                  value={dept.reg}
-                  onChange={(value) =>
-                    handleFieldChange("reg", value, dept.name)
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                label="LET Strength"
-                name={`let${dept.name}`}
-                initialValue={dept.let}
-              >
-                <InputNumber
-                  size="large"
-                  min={1}
-                  max={40}
-                  placeholder="LET Strength"
-                  style={{ width: "200px", marginRight: "40px" }}
-                  value={dept.let}
-                  onChange={(value) =>
-                    handleFieldChange("let", value, dept.name)
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                label="Dropped Students"
-                name={`drop${dept.name}`}
-                initialValue={dept.drop}
-              >
+        {selectedYear &&
+          selectedYear !== "null" &&
+          depts.map((dept, i) => (
+            <div key={i}>
+              <h3>{dept.name}</h3>
+              <Form.Item name={dept.name} initialValue={dept.initialValues}>
                 <Select
                   mode="tags"
-                  placeholder="Dropped Students"
-                  style={{ width: "400px", marginRight: "40px" }}
+                  style={{ width: "200%" }}
+                  placeholder={`Add Exams for ${dept.name}`}
                   onChange={(value) =>
-                    handleFieldChange("drop", value, dept.name)
+                    handleFieldChange("initialValues", value, dept.name)
                   }
-                  options={[]}
+                  options={dept.options.map((exam) => ({
+                    value: exam,
+                    label: exam,
+                  }))}
                 />
               </Form.Item>
-              <Form.Item
-                label="Rejoined Students"
-                name={`rejoin${dept.name}`}
-                initialValue={dept.rejoin}
-              >
-                <Select
-                  mode="tags"
-                  placeholder="Rejoined Students"
-                  style={{ width: "400px", marginRight: "40px" }}
-                  onChange={(value) =>
-                    handleFieldChange("rejoin", value, dept.name)
-                  }
-                  options={[]}
-                />
-              </Form.Item>
-            </FlexContainer>
-            <br />
-          </div>
-        ))}
+              <FlexContainer>
+                <Form.Item
+                  label="Regular Strength"
+                  name={`reg${dept.name}`}
+                  initialValue={dept.reg}
+                >
+                  <InputNumber
+                    size="large"
+                    min={1}
+                    max={65}
+                    placeholder="Regular Strength"
+                    style={{ width: "200px", marginRight: "40px" }}
+                    value={dept.reg}
+                    onChange={(value) =>
+                      handleFieldChange("reg", value, dept.name)
+                    }
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="LET Strength"
+                  name={`let${dept.name}`}
+                  initialValue={dept.let}
+                >
+                  <InputNumber
+                    size="large"
+                    min={1}
+                    max={40}
+                    placeholder="LET Strength"
+                    style={{ width: "200px", marginRight: "40px" }}
+                    value={dept.let}
+                    onChange={(value) =>
+                      handleFieldChange("let", value, dept.name)
+                    }
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="Dropped Students"
+                  name={`drop${dept.name}`}
+                  initialValue={dept.drop}
+                >
+                  <Select
+                    mode="tags"
+                    placeholder="Dropped Students"
+                    style={{ width: "400px", marginRight: "40px" }}
+                    onChange={(value) =>
+                      handleFieldChange("drop", value, dept.name)
+                    }
+                    options={[]}
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="Rejoined Students"
+                  name={`rejoin${dept.name}`}
+                  initialValue={dept.rejoin}
+                >
+                  <Select
+                    mode="tags"
+                    placeholder="Rejoined Students"
+                    style={{ width: "400px", marginRight: "40px" }}
+                    onChange={(value) =>
+                      handleFieldChange("rejoin", value, dept.name)
+                    }
+                    options={[]}
+                  />
+                </Form.Item>
+              </FlexContainer>
+              <br />
+            </div>
+          ))}
 
         <Form.Item>
           <Popconfirm

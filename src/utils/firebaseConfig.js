@@ -16,7 +16,7 @@ const firebaseConfig = {
   measurementId: "G-RQ2Z20YF5X",
 };
 
-//india
+// // india
 // const firebaseConfig = {
 //   apiKey: "AIzaSyB782w1EfTN82tJw2jcOaBdBGSz_dYYzc0",
 //   authDomain: "exam-seat1.firebaseapp.com",
@@ -26,7 +26,7 @@ const firebaseConfig = {
 //   appId: "1:878198270246:web:ab2daa3e674255ed6d79e7",
 // };
 
-//europe
+// europe
 // const firebaseConfig = {
 //   apiKey: "AIzaSyDXGko_PDjOrp30bafGkJNpz9yFUgk0rDs",
 //   authDomain: "exam-seat2.firebaseapp.com",

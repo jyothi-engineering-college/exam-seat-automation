@@ -51,6 +51,7 @@ const initialState = {
   classNames: [],
   singleClassView: [],
   selectedSlotName: "",
+  academicYear: dayjs().year(),
 };
 
 const AppContext = createContext();
@@ -217,7 +218,6 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchAcademicYear = async () => {
-    
     const docRef = doc(firestore, "DeptDetails", "AcademicYear");
     try {
       let year = dayjs().year();
@@ -521,6 +521,8 @@ const AppProvider = ({ children }) => {
 
       return subjects;
     } catch (error) {
+      showAlert("error", error.message);
+
       console.error("Error fetching document: ", error);
       return [];
     }
@@ -528,34 +530,78 @@ const AppProvider = ({ children }) => {
 
   const fetchExamOptions = async () => {
     showAlert("loading", "Fetching Options ...");
-    
     try {
-      // Fetch data from Firestore
-      const subjectsCollection = collection(db, "Subjects");
-      const querySnapshot = await getDocs(subjectsCollection);
+      const academicYearRef = doc(db, "DeptDetails", "AcademicYear");
+      const academicYearSnap = await getDoc(academicYearRef);
 
-      // Create an object to store options for each department
-      const fetchedOptions = {};
+      const subjectsRef = collection(db, "Subjects");
+      const subjectSnap = await getDocs(subjectsRef);
 
-      querySnapshot.forEach((doc) => {
+      const depts = ["CS", "EE", "ME", "CE", "EC", "CC", "AD", "RA", "MC"];
+
+      let { year } = academicYearSnap.data();
+      year = year.toString().substring(2, 4);
+
+      const deptDetails = {};
+
+      // Initialize deptDetails arrays for each semester
+      subjectSnap.forEach((doc) => {
         const data = doc.data();
-        const dept = data["DEPT"].substring(0, 2); // Get the first two letters of the department name
-        const courseCode = data["COURSE CODE"];
+        const sem = data["SEM"];
+        const dept = data["DEPT"].substring(0, 2); // Remove the year prefix from the department name
 
-        if (dept && courseCode) {
-          if (!fetchedOptions[dept]) {
-            fetchedOptions[dept] = [];
-          }
-          if (!fetchedOptions[dept].includes(courseCode)) {
-            fetchedOptions[dept].push(courseCode);
-          }
-        }
+        // Initialize deptDetails arrays
+        if (sem == "S1" || sem == "S2") deptDetails[`${year}${dept}`] = [];
+        else if (sem == "S3" || sem == "S4")
+          deptDetails[`${year - 1}${dept}`] = [];
+        else if (sem == "S5" || sem == "S6")
+          deptDetails[`${year - 2}${dept}`] = [];
+        else if (sem == "S7" || sem == "S8")
+          deptDetails[`${year - 3}${dept}`] = [];
       });
 
-      return fetchedOptions; // Return the fetched options
+      // Populate deptDetails based on semester range
+      // Populate deptDetails based on semester range
+      depts.forEach((dept) => {
+        subjectSnap.forEach((doc) => {
+          const docId = doc.id;
+          const courseCode = doc.data()["COURSE CODE"]; // Extract COURSE CODE
+
+          // For S1 and S2
+          if (
+            docId.startsWith(`S1_${dept}`) ||
+            docId.startsWith(`S2_${dept}`)
+          ) {
+            deptDetails[`${year}${dept}`].push(courseCode);
+          }
+          // For S3 and S4
+          else if (
+            docId.startsWith(`S3_${dept}`) ||
+            docId.startsWith(`S4_${dept}`)
+          ) {
+            deptDetails[`${year - 1}${dept}`].push(courseCode);
+          }
+          // For S5 and S6
+          else if (
+            docId.startsWith(`S5_${dept}`) ||
+            docId.startsWith(`S6_${dept}`)
+          ) {
+            deptDetails[`${year - 2}${dept}`].push(courseCode);
+          }
+          // For S7 and S8
+          else if (
+            docId.startsWith(`S7_${dept}`) ||
+            docId.startsWith(`S8_${dept}`)
+          ) {
+            deptDetails[`${year - 3}${dept}`].push(courseCode);
+          }
+        });
+      });
+
+      return deptDetails;
     } catch (error) {
       console.error("Error fetching options:", error);
-      throw error; // Re-throw the error for handling in the component
+      throw error;
     }
   };
 
@@ -566,12 +612,12 @@ const AppProvider = ({ children }) => {
 
     try {
       const slotsSnap = await getDoc(slotsDocRef);
-      const datetimeSnap = await getDoc(datetimeDocRef);      
+      const datetimeSnap = await getDoc(datetimeDocRef);
 
       if (slotsSnap.exists() && datetimeSnap.exists()) {
         const slotsData = slotsSnap.data();
-        console.log(slotsData,"slotsData");
-        
+        console.log(slotsData, "slotsData");
+
         const datetimeData = datetimeSnap.data();
 
         const formattedData = Object.keys(slotsData).map((slotKey) => {
@@ -599,6 +645,8 @@ const AppProvider = ({ children }) => {
         return sortedData;
       }
     } catch (error) {
+      showAlert("error", error.message);
+
       console.error("Error fetching documents: ", error);
       return [];
     }
@@ -645,8 +693,9 @@ const AppProvider = ({ children }) => {
         await updateDoc(datetimeDocRef, datetimeUpdates);
       }
       showAlert("success", "Slots Updated Successfully !");
-    } catch (error) { 
+    } catch (error) {
       showAlert("error", error.message);
+      console.log(error);
     }
   };
 
@@ -672,6 +721,8 @@ const AppProvider = ({ children }) => {
         return [];
       }
     } catch (error) {
+      showAlert("error", error.message);
+
       console.error("Error fetching document: ", error);
       return [];
     }
@@ -699,12 +750,13 @@ const AppProvider = ({ children }) => {
         return [];
       }
     } catch (error) {
+      showAlert("error", error.message);
       console.error("Error fetching document: ", error);
       return [];
     }
   };
 
-  const fetchExamData = async (examToday,selectedSlotName) => {
+  const fetchExamData = async (examToday, selectedSlotName) => {
     showAlert("loading", "Fetching Exam Data ...");
     const examHallDocRef = doc(db, "Classes", "AvailableClasses");
     const examsDocRef = doc(db, "DeptDetails", "Exams");
@@ -735,7 +787,6 @@ const AppProvider = ({ children }) => {
         const deptStrength = regSnap.data();
         const drop = Object.values(dropSnap.data()).flat();
         const rejoin = rejoinSnap.data();
-        
 
         dispatch({
           type: SET_ALLOCATION_DETAILS,
@@ -757,7 +808,6 @@ const AppProvider = ({ children }) => {
         return [];
       }
     } catch (error) {
-      
       showAlert("error", error.message);
       console.error("Error fetching document: ", error);
       return [];

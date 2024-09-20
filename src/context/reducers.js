@@ -1,5 +1,6 @@
 import {
   LOGOUT_USER,
+  SET_ACADEMIC_YEAR,
   SET_ALLOCATED_DATA,
   SET_ALLOCATION_DETAILS,
   SET_SINGLE_CLASS,
@@ -60,6 +61,11 @@ const reducer = (state, action) => {
       return {
         ...state,
         singleClassView: action.payload.singleClassView,
+      }
+    case SET_ACADEMIC_YEAR:
+      return {
+        ...state,
+        academicYear:action.payload.academicYear
       }
 
     default:
