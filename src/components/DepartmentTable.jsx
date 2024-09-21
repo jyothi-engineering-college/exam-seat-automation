@@ -14,8 +14,6 @@ const DepartmentTable = () => {
   // Update the data whenever deptView changes
   useEffect(() => {
     if (deptView.length > 0) {
-      console.log(deptView); // Log deptView to console
-
       setData(deptView); // Set the new data without transformation
     }
   }, [deptView]);

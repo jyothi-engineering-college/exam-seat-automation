@@ -52,6 +52,7 @@ const initialState = {
   classNames: [],
   singleClassView: [],
   selectedSlotName: "",
+  dateTime: "",
   academicYear: null,
 };
 
@@ -486,7 +487,11 @@ const AppProvider = ({ children }) => {
       }
       // Upload the accumulated slots data after processing all subjects
       const slotsDocRef = doc(db, "AllExams", "Slots");
-      await setDoc(slotsDocRef, slotsData, { merge: true }); // Don't push into slotsData if one courseCode already exists in any of the slots
+      const editedslotsDocRef = doc(db, "AllExams", "EditedSlots");
+
+      await setDoc(slotsDocRef, slotsData, { merge: true });
+      await setDoc(editedslotsDocRef, slotsData, { merge: true });
+
       if (cancelToken.current !== false) {
         showAlert("success", "Subjects and slots updated !");
         updateProgress(100);
@@ -540,19 +545,18 @@ const AppProvider = ({ children }) => {
 
       let processedItems = 0;
       let classesData = {}; // To accumulate classroom data
+      let classroomSet = new Set(); // For detecting duplicates
 
       // Function to find optimal rows and columns array based on the number of desks
       const findRowsAndColumns = (desks) => {
-        let rows = Math.floor(Math.sqrt(desks)); // Start with the square root for balanced layout
+        let rows = Math.floor(Math.sqrt(desks)); // Start with square root for balanced layout
         let columns = Math.ceil(desks / rows);
 
-        // Adjust rows and columns to make sure they don't exceed desks and are closest
         while (rows * columns > desks) {
           rows--;
           columns = Math.ceil(desks / rows);
         }
 
-        // Ensure rows are always greater than or equal to columns
         if (rows < columns) {
           [rows, columns] = [columns, rows]; // Swap rows and columns
         }
@@ -572,14 +576,14 @@ const AppProvider = ({ children }) => {
           return;
         }
 
-        // Sort the data based on "No:of desks" in descending order
+        // Sort the data based on "No:of desks" in descending order and detect duplicates
         const sortedData = data
           .slice(1)
           .filter((row) => row.length > 0)
           .sort((a, b) => {
-            const desksA = parseInt(a[2], 10) || 0; // Assuming "No:of desks" is at index 2
+            const desksA = parseInt(a[2], 10) || 0;
             const desksB = parseInt(b[2], 10) || 0;
-            return desksB - desksA; // Descending order
+            return desksB - desksA;
           });
 
         sortedData.forEach((row) => {
@@ -593,8 +597,13 @@ const AppProvider = ({ children }) => {
           const classroom = item["Classroom"];
           const desks = parseInt(item["No:of desks"], 10);
 
+          if (classroomSet.has(classroom)) {
+            throw new Error(`Duplicate classrooms found: ${classroom}`);
+          }
+          classroomSet.add(classroom);
+
           if (classroom && desks) {
-            const [rows, columns] = findRowsAndColumns(desks * 2); // Get optimal rows and columns array
+            const [rows, columns] = findRowsAndColumns(desks * 2); // Get optimal rows and columns
             classesData[classroom] = [rows, columns]; // Store as an array of [rows, columns]
 
             processedItems++;
@@ -606,7 +615,10 @@ const AppProvider = ({ children }) => {
 
       // Upload the accumulated classes data to Firebase
       const classesDocRef = doc(db, "Classes", "AvailableClasses");
+      const allottedclassesDocRef = doc(db, "Classes", "AllotedClasses");
+
       await setDoc(classesDocRef, classesData, { merge: true });
+      await setDoc(allottedclassesDocRef, classesData, { merge: true });
 
       if (cancelToken.current) {
         showAlert("success", "Classroom and desk data updated!");
@@ -615,9 +627,9 @@ const AppProvider = ({ children }) => {
         showAlert("warning", "Upload Cancelled!");
       }
     } catch (error) {
-      console.error(error);
       updateProgress(0);
       showAlert("error", error.message);
+      throw new Error(`${error.message}`);
     }
   };
 
@@ -700,33 +712,30 @@ const AppProvider = ({ children }) => {
   const fetchSlots = async () => {
     showAlert("loading", "Fetching Slots ...");
     const slotsDocRef = doc(db, "AllExams", "Slots");
+    const editedslotsDocRef = doc(db, "AllExams", "EditedSlots");
     const datetimeDocRef = doc(db, "AllExams", "DateTime");
 
     try {
-      const slotsSnap = await getDoc(slotsDocRef);
-      const datetimeSnap = await getDoc(datetimeDocRef);
+      const [editedslotsSnap, slotsSnap, datetimeSnap] = await Promise.all([
+        getDoc(editedslotsDocRef),
+        getDoc(slotsDocRef),
+        getDoc(datetimeDocRef),
+      ]);
 
       if (slotsSnap.exists()) {
         const slotsData = slotsSnap.data();
-        console.log(slotsData, "slotsData");
-
+        const editedSlotsData = editedslotsSnap.data();
         const datetimeData = datetimeSnap.data();
 
-        const formattedData = Object.keys(slotsData).map((slotKey) => {
-          const exams = slotsData[slotKey] || [];
+        const formattedData = Object.keys(editedSlotsData).map((slotKey) => {
+          const exams = editedSlotsData[slotKey] || [];
           const date = datetimeData ? datetimeData[slotKey] : null;
-
-          let formattedDate;
-          if (Array.isArray(date)) {
-            formattedDate = date.map((dateStr) => dayjs(dateStr));
-          } else {
-            formattedDate = null;
-          }
 
           return {
             Slot: slotKey,
             Exams: exams,
-            Date: formattedDate,
+            Date: Array.isArray(date) ? date.map(dayjs) : null,
+            options: slotsData[slotKey] || [], // Append options directly
           };
         });
 
@@ -738,7 +747,6 @@ const AppProvider = ({ children }) => {
       }
     } catch (error) {
       showAlert("error", error.message);
-
       console.error("Error fetching documents: ", error);
       return [];
     }
@@ -754,7 +762,7 @@ const AppProvider = ({ children }) => {
           : null,
       }));
 
-      const slotsDocRef = doc(db, "AllExams", "Slots");
+      const slotsDocRef = doc(db, "AllExams", "EditedSlots");
       const datetimeDocRef = doc(db, "AllExams", "DateTime");
 
       // Prepare objects to store updates
@@ -788,6 +796,58 @@ const AppProvider = ({ children }) => {
       }
 
       showAlert("success", "Slots Updated Successfully !");
+    } catch (error) {
+      showAlert("error", error.message);
+      console.log(error);
+    }
+  };
+
+  const updateBatches = async (data) => {
+    showAlert("loading", "Updating Batches ...");
+    try {
+      const examsRef = doc(firestore, "DeptDetails", "Exams");
+      const regStrengthRef = doc(firestore, "DeptDetails", "RegularStrength");
+      const letStrengthRef = doc(firestore, "DeptDetails", "LetStrength");
+      const dropRef = doc(firestore, "DeptDetails", "Dropped");
+      const rejoinRef = doc(firestore, "DeptDetails", "Rejoined");
+
+      // Prepare objects to store updates
+      const examsUpdates = {};
+      const regStrengthUpdates = {};
+      const letStrengthUpdates = {};
+      const dropUpdates = {};
+      const rejoinUpdates = {};
+
+      // Process each item from the data
+      data.forEach((item) => {
+        examsUpdates[item.deptName] = item.exams;
+        regStrengthUpdates[item.deptName] = item.regStrength;
+        letStrengthUpdates[item.deptName] = item.letStrength;
+        dropUpdates[item.deptName] = item.drop;
+        rejoinUpdates[item.deptName] = item.rejoin;
+      });
+
+      if (Object.keys(examsUpdates).length > 0) {
+        await setDoc(examsRef, examsUpdates, { merge: true });
+      }
+
+      if (Object.keys(regStrengthUpdates).length > 0) {
+        await setDoc(regStrengthRef, regStrengthUpdates, { merge: true });
+      }
+
+      if (Object.keys(letStrengthUpdates).length > 0) {
+        await setDoc(letStrengthRef, letStrengthUpdates, { merge: true });
+      }
+
+      if (Object.keys(dropUpdates).length > 0) {
+        await setDoc(dropRef, dropUpdates, { merge: true });
+      }
+
+      if (Object.keys(rejoinUpdates).length > 0) {
+        await setDoc(rejoinRef, rejoinUpdates, { merge: true });
+      }
+
+      showAlert("success", "Batches Updated Successfully !");
     } catch (error) {
       showAlert("error", error.message);
       console.log(error);
@@ -834,28 +894,19 @@ const AppProvider = ({ children }) => {
 
   const allotExamHall = async (examhalls) => {
     try {
-      // Check if examhalls array is empty
       if (examhalls.length === 0) {
-        console.log("No exam halls to update.");
         return;
       }
 
       const classDocRef = doc(db, "Classes", "AllotedClasses");
-
-      // Create a new object that will hold all the hall data
       const updatedData = {};
 
       for (const hall of examhalls) {
         const { Hall, rowcol } = hall;
-
-        // Add each hall and its rowcol to the updatedData object
         updatedData[Hall] = rowcol;
       }
 
-      // Overwrite the entire document with the updatedData object
       await setDoc(classDocRef, updatedData);
-
-      console.log("Exam halls document overwritten successfully!");
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -863,7 +914,7 @@ const AppProvider = ({ children }) => {
 
   const fetchslotNames = async () => {
     showAlert("loading", "Fetching Slots");
-    const slotsDocRef = doc(db, "AllExams", "Slots");
+    const slotsDocRef = doc(db, "AllExams", "EditedSlots");
 
     try {
       const docSnap = await getDoc(slotsDocRef);
@@ -897,6 +948,7 @@ const AppProvider = ({ children }) => {
     const regDocRef = doc(db, "DeptDetails", "RegularStrength");
     const dropDocRef = doc(db, "DeptDetails", "Dropped");
     const rejoinDocRef = doc(db, "DeptDetails", "Rejoined");
+    const datetimeDocRef = doc(db, "AllExams", "DateTime");
 
     try {
       const classSnap = await getDoc(examHallDocRef);
@@ -905,6 +957,7 @@ const AppProvider = ({ children }) => {
       const regSnap = await getDoc(regDocRef);
       const dropSnap = await getDoc(dropDocRef);
       const rejoinSnap = await getDoc(rejoinDocRef);
+      const datetimeSnap = await getDoc(datetimeDocRef);
 
       if (
         classSnap.exists() &&
@@ -912,7 +965,8 @@ const AppProvider = ({ children }) => {
         letSnap.exists() &&
         regSnap.exists() &&
         dropSnap.exists() &&
-        rejoinSnap.exists()
+        rejoinSnap.exists() &&
+        datetimeSnap.exists()
       ) {
         const classCapacity = classSnap.data();
         const exams = examsSnap.data();
@@ -920,6 +974,21 @@ const AppProvider = ({ children }) => {
         const deptStrength = regSnap.data();
         const drop = Object.values(dropSnap.data()).flat();
         const rejoin = rejoinSnap.data();
+        const datetimeData = datetimeSnap.data();
+        const dateTime = Object.keys(datetimeData)
+          .filter((key) => key.startsWith(selectedSlotName))
+          .reduce((formatted, key) => {
+            const startTime = dayjs(datetimeData[key][0]).format(
+              "DD-MM-YYYY hh:mm A"
+            );
+            const endTime = dayjs(datetimeData[key][1]).format("hh:mm A");
+
+            // Return the formatted time range
+            return `${startTime} - ${endTime}`;
+          }, "");
+        if (dateTime === "") {
+          throw new Error("No date-time data found for the selected slot !");
+        }
 
         dispatch({
           type: SET_ALLOCATION_DETAILS,
@@ -932,6 +1001,7 @@ const AppProvider = ({ children }) => {
             rejoin,
             examToday,
             selectedSlotName,
+            dateTime,
           },
         });
         showAlert("success", "Exam Data Fetched Successfully !");
@@ -990,6 +1060,7 @@ const AppProvider = ({ children }) => {
         setAllocatedData,
         setSingleClassView,
         allotExamHall,
+        updateBatches,
       }}
     >
       {contextHolder}

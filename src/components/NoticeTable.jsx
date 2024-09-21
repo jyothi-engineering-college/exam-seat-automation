@@ -6,7 +6,7 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 const NoticeTable = () => {
-  const { noticeBoardView } = useAppContext(); // Access noticeBoardView from context
+  const { noticeBoardView,dateTime } = useAppContext(); // Access noticeBoardView from context
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,6 +71,7 @@ const NoticeTable = () => {
 
   return (
     <>
+      {dateTime && <h3>{dateTime}</h3>}
       <TableContainer {...props} />
       <center>
         <Button

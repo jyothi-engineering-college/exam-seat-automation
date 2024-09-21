@@ -2,22 +2,9 @@ import { EditOutlined } from "@ant-design/icons";
 import { Button, DatePicker, Popconfirm, Select } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { createTheme } from "react-data-table-component";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
-
-createTheme("custom", {
-  text: {
-    primary: "#268bd2",
-  },
-  background: {
-    default: "#f0f9ff",
-  },
-  divider: {
-    default: "#636566",
-  },
-});
 
 const { RangePicker } = DatePicker;
 
@@ -29,8 +16,9 @@ const SlotsTable = () => {
   const [editingKey, setEditingKey] = useState("");
   const [editData, setEditData] = useState({});
 
-  useEffect(() => {
+  useEffect(() => {    
     fetchSlots().then((data) => {
+      console.log(data);
       
       setData(data);
     });
@@ -41,7 +29,7 @@ const SlotsTable = () => {
   const handleEdit = (key) => {
     setEditingKey(key);
     const record = data.find((item) => item.Slot === key);
-    setEditData({ ...record }); // Ensure you're setting a copy of the record
+    setEditData({ ...record }); 
   };
 
   const handleSave = async () => {
@@ -65,7 +53,7 @@ const SlotsTable = () => {
   const handleDateRangeChange = (value) => {
     setEditData((prev) => ({
       ...prev,
-      Date: value, // Directly save the range picker value
+      Date: value, 
     }));
   };
 
@@ -86,7 +74,7 @@ const SlotsTable = () => {
             placeholder={`Add Exams for ${row.Slot}`}
             value={editData.Exams}
             onChange={(value) => handleChange(value, "Exams")}
-            options={editData.Exams.map((exam) => ({
+            options={editData.options.map((exam) => ({
               value: exam,
               label: exam,
             }))}

@@ -1,8 +1,8 @@
-import { Select, Collapse, ConfigProvider } from "antd"; // Import ConfigProvider
-import FlexContainer from "../components/FlexContainer";
-import { useAppContext } from "../context/AppContext";
+import { Collapse, ConfigProvider, Select } from "antd"; // Import ConfigProvider
 import { useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import { test } from "../utils/seatAllocator";
+import { set } from "lodash";
 
 const TodayExam = () => {
   const {
@@ -20,9 +20,15 @@ const TodayExam = () => {
     selectedSlotName,
   } = useAppContext();
   const [slotNames, setSlotNames] = useState([]);
+  const [slotChanged, setSlotChanged] = useState(false);
 
   const submitSlot = async (slot) => {
-    await fetchExamData(slots[slot], slot);
+    if (selectedSlotName === slot) {
+      setSlotChanged(false);
+    } else {
+      setSlotChanged(true);
+      await fetchExamData(slots[slot], slot);
+    }
   };
 
   useEffect(() => {
@@ -36,17 +42,19 @@ const TodayExam = () => {
       examToday &&
       selectedSlotName
     ) {
-      const allocatedData = test(
-        classCapacity,
-        deptStrength,
-        letStrength,
-        exams,
-        drop,
-        rejoin,
-        examToday,
-        selectedSlotName
-      );
-      setAllocatedData(allocatedData);
+      if (slotChanged) {
+        const allocatedData = test(
+          classCapacity,
+          deptStrength,
+          letStrength,
+          exams,
+          drop,
+          rejoin,
+          examToday,
+          selectedSlotName
+        );
+        setAllocatedData(allocatedData);
+      }
     }
   }, [
     classCapacity,
@@ -119,7 +127,7 @@ const TodayExam = () => {
           defaultActiveKey={[]}
           items={items}
           collapsible="header"
-          style={{ width: "97%", margin: "0 auto" }} 
+          style={{ width: "97%", margin: "0 auto" }}
         />
       </>
     </ConfigProvider>

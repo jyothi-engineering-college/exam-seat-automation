@@ -48,6 +48,7 @@ const reducer = (state, action) => {
         rejoin: action.payload.rejoin,
         examToday: action.payload.examToday,
         selectedSlotName: action.payload.selectedSlotName,
+        dateTime: action.payload.dateTime,
       };
     case SET_ALLOCATED_DATA:
       return {

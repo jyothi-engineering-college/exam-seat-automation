@@ -3,15 +3,27 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
+import { Button } from "antd";
+import { Popconfirm } from "antd";
+import { EditOutlined } from "@ant-design/icons";
+import { Form } from "antd";
+import { InputNumber } from "antd";
+import { Select } from "antd";
 
 const BatchesTable = () => {
-  const { fetchBatches, fetchAcademicYear, updateAcademicYear, academicYear } =
-    useAppContext();
+  const {
+    fetchBatches,
+    fetchAcademicYear,
+    updateAcademicYear,
+    academicYear,
+    updateBatches,
+  } = useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingKey, setEditingKey] = useState("");
+  const [editData, setEditData] = useState({});
 
-  // Fetch batch data once on mount
   useEffect(() => {
     fetchBatches().then((data) => {
       setData(data);
@@ -19,11 +31,36 @@ const BatchesTable = () => {
   }, [fetchBatches]);
 
   useEffect(() => {
-    fetchAcademicYear();    
+    fetchAcademicYear();
   }, []);
 
-  const filteredResults = filteredData(data, searchTerm);
+  const handleEdit = (key) => {
+    setEditingKey(key);
+    const record = data.find((item) => item.deptName === key);
+    console.log(record);
 
+    setEditData({ ...record });
+  };
+
+  const handleSave = async () => {
+    const newData = data.map((item) =>
+      item.deptName === editingKey ? editData : item
+    );
+
+    await updateBatches(newData);
+    setData(newData);
+    setEditingKey("");
+    setEditData({}); // Clear editData
+  };
+
+  const handleChange = (value, field) => {
+    setEditData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const filteredResults = filteredData(data, searchTerm);
   const columns = [
     {
       name: "Name",
@@ -38,28 +75,143 @@ const BatchesTable = () => {
       wrap: true,
     },
     {
-      name: "Regular Strength",
-      selector: (row) => row.regStrength || 0,
+      name: "Regular",
+      selector: (row) =>
+        editingKey == row.deptName ? (
+          <Form.Item
+            initialValue={editData.regStrength}
+            rules={[
+              {
+                required: true,
+                message: "Please enter Regular Strength",
+              },
+            ]}
+          >
+            <InputNumber
+              size="large"
+              min={1}
+              max={500}
+              placeholder="Regular Strength"
+              style={{ width: "150px" }}
+              value={editData.regStrength}
+              onChange={(value) => handleChange(value, "regStrength")}
+            />
+          </Form.Item>
+        ) : (
+          row.regStrength || 0
+        ),
       sortable: true,
       wrap: true,
     },
     {
-      name: "Let Strength",
-      selector: (row) => row.letStrength || 0,
+      name: "LET",
+      selector: (row) =>
+        editingKey == row.deptName ? (
+          <Form.Item
+            initialValue={editData.letStrength}
+            rules={[
+              {
+                required: true,
+                message: "Please enter Let Strength",
+              },
+            ]}
+          >
+            <InputNumber
+              size="large"
+              min={1}
+              max={500}
+              placeholder="Let Strength"
+              style={{ width: "150px" }}
+              value={editData.letStrength}
+              onChange={(value) => handleChange(value, "letStrength")}
+            />
+          </Form.Item>
+        ) : (
+          row.letStrength || 0
+        ),
       sortable: true,
       wrap: true,
     },
     {
-      name: "Dropped Students",
-      selector: (row) => row.drop?.join(" , ") || "NIL",
+      name: "Dropped",
+      selector: (row) =>
+        editingKey == row.deptName ? (
+          <Form.Item
+            initialValue={editData.drop}
+            rules={[
+              {
+                required: true,
+                message: "Please add Dropped students",
+              },
+            ]}
+          >
+            <Select
+              mode="tags"
+              style={{ minWidth: "150px" }}
+              placeholder="Add Dropped students"
+              value={editData.drop}
+              onChange={(value) => handleChange(value, "drop")}
+            />
+          </Form.Item>
+        ) : (
+          row.drop?.join(" , ") || "NIL"
+        ),
       sortable: true,
       wrap: true,
     },
     {
-      name: "Rejoined Students",
-      selector: (row) => row.rejoin?.join(" , ") || "NIL",
+      name: "Rejoined",
+      selector: (row) =>
+        editingKey == row.deptName ? (
+          <Form.Item
+            initialValue={editData.rejoin}
+            rules={[
+              {
+                required: true,
+                message: "Please add Rejoined students",
+              },
+            ]}
+          >
+            <Select
+              mode="tags"
+              style={{ minWidth: "150px" }}
+              placeholder="Add Rejoined students"
+              value={editData.rejoin}
+              onChange={(value) => handleChange(value, "rejoin")}
+            />
+          </Form.Item>
+        ) : (
+          row.rejoin?.join(" , ") || "NIL"
+        ),
       sortable: true,
       wrap: true,
+    },
+    {
+      name: "Edit",
+      selector: (row) =>
+        editingKey === row.deptName ? (
+          <span>
+            <Button type="primary" onClick={handleSave}>
+              Save
+            </Button>
+            <Popconfirm
+              title="Cancel editing?"
+              onConfirm={() => {
+                setEditingKey("");
+                setEditData({});
+              }}
+            >
+              <Button type="primary" style={{ marginLeft: 8 }} danger>
+                Cancel
+              </Button>
+            </Popconfirm>
+          </span>
+        ) : (
+          <Button type="link" onClick={() => handleEdit(row.deptName)}>
+            <EditOutlined />
+          </Button>
+        ),
+      sortable: false,
     },
   ];
 

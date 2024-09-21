@@ -9,9 +9,7 @@ const SubjectsTable = () => {
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    console.log(academicYear);
-    
+  useEffect(() => {    
     fetchSubjects().then((data) => {
       setData(data);
     });
