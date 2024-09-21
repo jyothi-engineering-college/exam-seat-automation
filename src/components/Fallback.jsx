@@ -7,7 +7,7 @@ const Fallback = ({ error, resetErrorBoundary }) => {
     <>
       <FlexContainer>
         <div>
-          <h1>Evdeyo entho oru thakarar pole !</h1>
+          <h1>Something went wrong !</h1>
           <p>{error.message}</p>
           <Button className="refreshbutton" type="primary"  onClick={resetErrorBoundary}>
             Refresh</Button>

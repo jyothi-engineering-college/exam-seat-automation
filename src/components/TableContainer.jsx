@@ -1,5 +1,4 @@
 import { SearchOutlined } from "@ant-design/icons/lib";
-import { Select } from "antd";
 import { ConfigProvider, DatePicker, Input, Space } from "antd";
 import DataTable, { createTheme } from "react-data-table-component";
 

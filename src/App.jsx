@@ -1,17 +1,17 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Fallback from "./components/Fallback";
-import Printpage from "./components/Printpage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import AddForm from "./pages/dashboard/AddForm";
 import Batches from "./pages/dashboard/Batches";
+import EditForm from "./pages/dashboard/EditForm";
 import ExamHalls from "./pages/dashboard/ExamHalls";
 import Home from "./pages/dashboard/Home";
+import PrintData from "./pages/dashboard/PrintData";
 import Sharedlayout from "./pages/dashboard/SharedLayout";
 import Slots from "./pages/dashboard/Slots";
 import Subjects from "./pages/dashboard/Subjects";
-import EditForm from "./pages/dashboard/EditForm";
 
 const App = () => {
   return (
@@ -35,7 +35,7 @@ const App = () => {
           <Route path="/addform" element={<AddForm />} />
           <Route path="/editform" element={<EditForm />} />
         </Route>
-        <Route path="/print" element={<Printpage />} />
+          <Route path="/print" element={<PrintData />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<Fallback />} />

@@ -9,7 +9,7 @@ const ClassButton = () => {
 
   const handleClick = (index) => {
     setSingleClassView(classroomView[index]);
-    navigate("/print"); // Navigate to /print after setting the view
+    navigate("/print?destination=class"); // Navigate to /print after setting the view
   };
 
   return (

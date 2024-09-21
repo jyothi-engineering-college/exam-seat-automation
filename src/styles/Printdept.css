@@ -1,0 +1,26 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
+  background-color: #fff; /* Set white background */
+}
+
+.table th,
+.table td {
+  border: 1px solid #000;
+  padding: 10px;
+  text-align: left;
+  color: #000; /* Set black font color */
+}
+
+.table td {
+  font-size: 14px;
+  color: #000; /* Ensure text is black for table cells */
+}
+
+/* Make only the first column with class names bold */
+.table td.class-column {
+  font-weight: bold;
+  vertical-align: middle;
+}

@@ -1,17 +1,15 @@
 import React, { useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import "../styles/Print.css";
-const Printpage = () => {
+const ClassPrint = () => {
   const { singleClassView } = useAppContext();
 
   if (!singleClassView || singleClassView.length === 0) {
     return <p>No data available to display</p>;
   }
 
-  // Calculate the number of dynamic headers
   const headerCount = singleClassView[0].length / 2;
 
-  // Create an array for headers dynamically
   const headers = Array.from({ length: headerCount }, (_, i) => [
     `Seat No`,
     `Register No`,
@@ -47,4 +45,4 @@ const Printpage = () => {
   );
 };
 
-export default Printpage;
+export default ClassPrint;
