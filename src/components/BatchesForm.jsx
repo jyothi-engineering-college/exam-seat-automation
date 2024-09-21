@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Select, Form, message, Popconfirm } from "antd";
+import { Button, Select, Form, Popconfirm } from "antd";
 import { useAppContext } from "../context/AppContext";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +30,35 @@ const BatchesForm = () => {
     setDepts((prevDepts) =>
       prevDepts.map((dept) =>
         dept.name === deptName ? { ...dept, [field]: value } : dept
+      )
+    );
+  };
+
+  const allFieldsFilled = () => {
+    const yearValid =
+      /^(first_years|second_years|third_years|fourth_years)$/.test(
+        selectedYear
+      );
+
+    const isDroppedValid = (dropArray) =>
+      dropArray.every((student) =>
+        /^(LJEC|JEC)\d{2}[A-Z]{2}\d{3}$/.test(student)
+      );
+
+    const isRejoinedValid = (rejoinArray) =>
+      rejoinArray.every((student) =>
+        /^(LJEC|JEC)\d{2}[A-Z]{2}\d{3}$/.test(student)
+      );
+
+    return (
+      yearValid &&
+      depts.every(
+        (dept) =>
+          dept.initialValues.length > 0 &&
+          dept.reg &&
+          dept.let &&
+          isDroppedValid(dept.drop) && // Check if dropped students are valid
+          isRejoinedValid(dept.rejoin) // Check if rejoined students are valid
       )
     );
   };
@@ -87,7 +116,13 @@ const BatchesForm = () => {
           label="Select Year"
           name="Year"
           initialValue={selectedYear}
-          rules={[{ required: true, message: "Please select the Year!" }]}
+          rules={[
+            { required: true, message: "Please select the year !" },
+            {
+              pattern: /^(first_years|second_years|third_years|fourth_years)$/,
+              message: "Please select the year !",
+            },
+          ]}
         >
           <Select
             style={{ width: 120 }}
@@ -106,7 +141,16 @@ const BatchesForm = () => {
           depts.map((dept, i) => (
             <div key={i}>
               <h3>{dept.name}</h3>
-              <Form.Item name={dept.name} initialValue={dept.initialValues}>
+              <Form.Item
+                name={dept.name}
+                initialValue={dept.initialValues}
+                rules={[
+                  {
+                    required: true,
+                    message: `Please add exams for ${dept.name}`,
+                  },
+                ]}
+              >
                 <Select
                   mode="tags"
                   style={{ width: "200%" }}
@@ -126,11 +170,17 @@ const BatchesForm = () => {
                   label="Regular Strength"
                   name={`reg${dept.name}`}
                   initialValue={dept.reg}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter Regular Strength",
+                    },
+                  ]}
                 >
                   <InputNumber
                     size="large"
                     min={1}
-                    max={65}
+                    max={500}
                     placeholder="Regular Strength"
                     style={{ width: "200px", marginRight: "40px" }}
                     value={dept.reg}
@@ -144,6 +194,9 @@ const BatchesForm = () => {
                   label="LET Strength"
                   name={`let${dept.name}`}
                   initialValue={dept.let}
+                  rules={[
+                    { required: true, message: "Please enter LET Strength" },
+                  ]}
                 >
                   <InputNumber
                     size="large"
@@ -162,6 +215,23 @@ const BatchesForm = () => {
                   label="Dropped Students"
                   name={`drop${dept.name}`}
                   initialValue={dept.drop}
+                  rules={[
+                    {
+                      validator: (_, value) => {
+                        if (
+                          !value ||
+                          value.every((student) =>
+                            /^(LJEC|JEC)\d{2}[A-Z]{2}\d{3}$/.test(student)
+                          )
+                        ) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error("Please enter valid Register NO!")
+                        );
+                      },
+                    },
+                  ]}
                 >
                   <Select
                     mode="tags"
@@ -178,6 +248,23 @@ const BatchesForm = () => {
                   label="Rejoined Students"
                   name={`rejoin${dept.name}`}
                   initialValue={dept.rejoin}
+                  rules={[
+                    {
+                      validator: (_, value) => {
+                        if (
+                          !value ||
+                          value.every((student) =>
+                            /^(LJEC|JEC)\d{2}[A-Z]{2}\d{3}$/.test(student)
+                          )
+                        ) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error("Please enter valid Register NO !")
+                        );
+                      },
+                    },
+                  ]}
                 >
                   <Select
                     mode="tags"
@@ -196,12 +283,16 @@ const BatchesForm = () => {
 
         <Form.Item>
           <Popconfirm
-            onConfirm={submitForm}
+            onConfirm={allFieldsFilled() ? submitForm : null}
             title="Current year exams data will be overwritten!"
             description="Are you sure you want to submit?"
             icon={<QuestionCircleOutlined style={{ color: "red" }} />}
           >
-            <Button type="primary" htmlType="submit">
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={!allFieldsFilled()}
+            >
               Submit
             </Button>
           </Popconfirm>

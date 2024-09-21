@@ -796,20 +796,30 @@ const AppProvider = ({ children }) => {
 
   const fetchExamHalls = async () => {
     showAlert("loading", "Fetching Exam Halls ...");
-    const slotsDocRef = doc(db, "Classes", "AvailableClasses");
+    const availDocRef = doc(db, "Classes", "AvailableClasses");
+    const allotDocRef = doc(db, "Classes", "AllotedClasses");
 
     try {
-      const docSnap = await getDoc(slotsDocRef);
+      const availdocSnap = await getDoc(availDocRef);
+      const allotdocSnap = await getDoc(allotDocRef);
 
-      if (docSnap.exists()) {
-        const docData = docSnap.data();
-        const sortedData = Object.keys(docData)
+      if (availdocSnap.exists() && allotdocSnap.exists()) {
+        const availdocData = availdocSnap.data();
+        const allotdocData = allotdocSnap.data();
+
+        const sortedData = Object.keys(availdocData)
           .map((key) => {
-            const [rows, columns] = docData[key]; // Destructure rows and columns from array
-            const totalCapacity = rows * columns; // Calculate total capacity
-            return { Hall: key, Capacity: totalCapacity }; // Return with calculated capacity
+            const [rows, columns] = availdocData[key]; // Assuming docData is availdocData
+            const totalCapacity = rows * columns;
+            return {
+              Hall: key,
+              Capacity: totalCapacity,
+              rowcol: [rows, columns],
+              alloted: allotdocData.hasOwnProperty(key),
+            };
           })
-          .sort((a, b) => a.Hall.localeCompare(b.Hall)); // Sort based on hall name (fixed the sort key)
+          .sort((a, b) => a.Hall.localeCompare(b.Hall));
+
         return sortedData;
       } else {
         console.log("No such document!");
@@ -817,9 +827,37 @@ const AppProvider = ({ children }) => {
       }
     } catch (error) {
       showAlert("error", error.message);
-
       console.error("Error fetching document: ", error);
       return [];
+    }
+  };
+
+  const allotExamHall = async (examhalls) => {
+    try {
+      // Check if examhalls array is empty
+      if (examhalls.length === 0) {
+        console.log("No exam halls to update.");
+        return;
+      }
+
+      const classDocRef = doc(db, "Classes", "AllotedClasses");
+
+      // Create a new object that will hold all the hall data
+      const updatedData = {};
+
+      for (const hall of examhalls) {
+        const { Hall, rowcol } = hall;
+
+        // Add each hall and its rowcol to the updatedData object
+        updatedData[Hall] = rowcol;
+      }
+
+      // Overwrite the entire document with the updatedData object
+      await setDoc(classDocRef, updatedData);
+
+      console.log("Exam halls document overwritten successfully!");
+    } catch (error) {
+      console.error("Error updating document: ", error);
     }
   };
 
@@ -853,7 +891,7 @@ const AppProvider = ({ children }) => {
 
   const fetchExamData = async (examToday, selectedSlotName) => {
     showAlert("loading", "Fetching Exam Data ...");
-    const examHallDocRef = doc(db, "Classes", "AvailableClasses");
+    const examHallDocRef = doc(db, "Classes", "AllotedClasses");
     const examsDocRef = doc(db, "DeptDetails", "Exams");
     const letDocRef = doc(db, "DeptDetails", "LetStrength");
     const regDocRef = doc(db, "DeptDetails", "RegularStrength");
@@ -951,6 +989,7 @@ const AppProvider = ({ children }) => {
         fetchslotNames,
         setAllocatedData,
         setSingleClassView,
+        allotExamHall,
       }}
     >
       {contextHolder}
