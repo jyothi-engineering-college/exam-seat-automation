@@ -2,18 +2,18 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
+import { Button } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const DepartmentTable = () => {
   const { deptView } = useAppContext(); // Access deptView from context
-
+   const navigate = useNavigate(); // Use navigate to change routes
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Update the data whenever deptView changes
   useEffect(() => {
     if (deptView.length > 0) {
-      console.log(deptView); // Log deptView to console
-      
       setData(deptView); // Set the new data without transformation
     }
   }, [deptView]);
@@ -76,7 +76,21 @@ const DepartmentTable = () => {
     setSearchTerm,
   };
 
-  return <TableContainer {...props} />;
+  return (
+    <>
+      <TableContainer {...props} />
+      <center>
+        <Button
+          className="printbutton"
+          onClick={() => {
+            navigate("/print?destination=dept");
+          }}
+        >
+          PRINT
+        </Button>
+      </center>
+    </>
+  );
 };
 
 export default DepartmentTable;

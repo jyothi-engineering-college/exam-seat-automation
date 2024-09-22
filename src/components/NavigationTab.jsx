@@ -35,7 +35,6 @@ const NavigationTab = () => {
               navigate("/");
               break;
             case "Slots":
-              console.log("Slots");
               navigate("/slots");
               break;
             case "Batches":

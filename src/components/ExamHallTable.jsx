@@ -1,18 +1,22 @@
-import { EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
 
 const ExamHallTable = () => {
-  const { fetchExamHalls } = useAppContext();
+  const { fetchExamHalls, allotExamHall } = useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [preselectedRows, setPreselectedRows] = useState([]);
 
   useEffect(() => {
-    fetchExamHalls().then((data) => {
-      setData(data);
+    fetchExamHalls().then((fetchedData) => {
+      setData(fetchedData);
+      const defaultSelectedRows = fetchedData.filter(
+        (row) => row.alloted == true
+      );
+      setPreselectedRows(defaultSelectedRows);
     });
   }, [fetchExamHalls]);
 
@@ -31,9 +35,24 @@ const ExamHallTable = () => {
       sortable: true,
       wrap: true,
     },
-   
   ];
-  let props = { tableName:"Exam Halls",columns, filteredResults, searchTerm, setSearchTerm };
+
+  const handleRowSelected = async (state) => {
+    await allotExamHall(state.selectedRows);
+  };
+
+  let props = {
+    tableName: "Exam Halls",
+    columns,
+    filteredResults,
+    searchTerm,
+    setSearchTerm,
+    selectableRows: true,
+    selectableRowSelected: (row) => {
+      return preselectedRows.some((selected) => selected.Hall === row.Hall);
+    },
+    handleRowSelected,
+  };
 
   return (
     <>

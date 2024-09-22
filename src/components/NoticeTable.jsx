@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { filteredData } from "../utils/dataSearch";
 import TableContainer from "./TableContainer";
+import { Button } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const NoticeTable = () => {
-  const { noticeBoardView } = useAppContext(); // Access noticeBoardView from context
+  const { noticeBoardView,dateTime } = useAppContext(); // Access noticeBoardView from context
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
+  const navigate = useNavigate();
   // useEffect to update the data whenever noticeBoardView changes
   useEffect(() => {
     if (noticeBoardView.length > 0) {
-
       setData(noticeBoardView); // Set the new data from noticeBoardView
     }
   }, [noticeBoardView]); // Dependency array includes noticeBoardView
@@ -70,7 +71,18 @@ const NoticeTable = () => {
 
   return (
     <>
+      {dateTime && <h3>{dateTime}</h3>}
       <TableContainer {...props} />
+      <center>
+        <Button
+          className="printbutton"
+          onClick={() => {
+            navigate("/print?destination=notice");
+          }}
+        >
+          PRINT
+        </Button>
+      </center>
     </>
   );
 };

@@ -8,8 +8,7 @@ export const test = (
   rejoin,
   examToday
 ) => {
-  
-  console.log(classCapacity,deptStrength,letStrength);
+  console.log("Allocating seats");
   
   let sup = {};
 
@@ -336,7 +335,7 @@ export const test = (
 
   const consolidateItems = (items) => {
     const groupedItems = {};
- 
+
     items.forEach((item) => {
       if (item != 0) {
         const [prefix, num] = item
@@ -564,7 +563,6 @@ export const test = (
   const classroomView = classes.map((cls) => {
     return classroomViewMaker(cls);
   });
-    
 
-  return [noticeBoardView, deptView, classroomView,classNames];
+  return [noticeBoardView, deptView, classroomView, classNames];
 };
