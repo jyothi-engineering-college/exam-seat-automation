@@ -17,9 +17,7 @@ const SlotsTable = () => {
   const [editData, setEditData] = useState({});
 
   useEffect(() => {    
-    fetchSlots().then((data) => {
-      console.log(data);
-      
+    fetchSlots().then((data) => {      
       setData(data);
     });
   }, [fetchSlots]);
@@ -63,6 +61,7 @@ const SlotsTable = () => {
       selector: (row) => row.Slot,
       wrap: true,
       sortable: true,
+      width: "100px",
     },
     {
       name: "Exams",
@@ -80,9 +79,11 @@ const SlotsTable = () => {
             }))}
           />
         ) : (
-          row.Exams.join(" | ")
+          row.Exams.join(" ║ ")
         ),
       wrap: true,
+      width: "700px",
+
       sortable: true,
     },
     {
@@ -91,11 +92,11 @@ const SlotsTable = () => {
         editingKey === row.Slot ? (
           <RangePicker
             size="large"
-            showTime={{ format: "hh:mm A" }} // AM/PM format
-            value={editData.Date} // Initialize with the selected range
-            onChange={handleDateRangeChange} // Update state on change
-            format="DD-MM-YYYY hh:mm A" // Include AM/PM in format
-            style={{ width: "300px", height: "50px" }} // Adjust width and height as needed
+            showTime={{ format: "hh:mm A" }}
+            value={editData.Date}
+            onChange={handleDateRangeChange}
+            format="DD-MM-YYYY hh:mm A"
+            style={{ width: "400px", height: "50px" }}
           />
         ) : row.Date ? (
           dayjs(row.Date[0]).format("DD-MM-YYYY hh:mm A") +
@@ -105,6 +106,8 @@ const SlotsTable = () => {
           "No Date & Time Allotted"
         ),
       wrap: true,
+      width: "400px",
+
       sortable: true,
     },
     {
@@ -112,7 +115,9 @@ const SlotsTable = () => {
       selector: (row) =>
         editingKey === row.Slot ? (
           <span>
-            <Button type="primary" onClick={handleSave}>Save</Button>
+            <Button type="primary" onClick={handleSave}>
+              Save
+            </Button>
             <Popconfirm
               title="Cancel editing?"
               onConfirm={() => {
@@ -120,7 +125,9 @@ const SlotsTable = () => {
                 setEditData({}); // Clear editData on cancel
               }}
             >
-              <Button type="primary" style={{ marginLeft: 8 }} danger>Cancel</Button>
+              <Button type="primary" style={{ marginLeft: 8 }} danger>
+                Cancel
+              </Button>
             </Popconfirm>
           </span>
         ) : (

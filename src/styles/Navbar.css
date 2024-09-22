@@ -11,11 +11,15 @@
 }
 
 .appName {
-  margin: 0 auto; 
+  margin: 0 0 0 60px; 
 font-size: 36px;
   text-align: center;
   padding-top: 5px;
   flex-grow: 1; 
+}
+.dropdownicon{
+  margin-top: 20px;
+  cursor: pointer;
 }
 
 .welcomeName {
@@ -23,8 +27,5 @@ font-size: 36px;
   font-weight: 600;
   padding-top: 15px;
   text-align: right; 
-}
-.ant-dropdown-menu-item{
-  background-color: #F0F9FF;
-  border-color: #F0F9FF;
+  cursor: pointer;
 }

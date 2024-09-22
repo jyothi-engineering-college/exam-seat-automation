@@ -15,11 +15,10 @@ const BatchesForm = () => {
   const hasLoaded = useRef(false);
   const [form] = Form.useForm();
 
-  // Handling year selection
   const handleYearChange = async (value) => {
     setSelectedYear(value);
     try {
-      const fetchedDepts = await fetchExamOptions(value); // Fetch new data based on the selected year
+      const fetchedDepts = await fetchExamOptions(value); 
       setDepts(fetchedDepts);
     } catch (error) {
       console.error("Error fetching options:", error);
@@ -52,13 +51,14 @@ const BatchesForm = () => {
 
     return (
       yearValid &&
+      depts.length > 0 &&
       depts.every(
         (dept) =>
           dept.initialValues.length > 0 &&
           dept.reg &&
           dept.let &&
-          isDroppedValid(dept.drop) && // Check if dropped students are valid
-          isRejoinedValid(dept.rejoin) // Check if rejoined students are valid
+          isDroppedValid(dept.drop) &&
+          isRejoinedValid(dept.rejoin)
       )
     );
   };
@@ -106,14 +106,16 @@ const BatchesForm = () => {
   return (
     <>
       <Form
+        className="batches-form"
         form={form}
         layout="vertical"
         name="basic"
-        style={{ maxWidth: 600 }}
+        style={{ maxWidth: "100%" }}
         autoComplete="on"
       >
+        {" "}
+        <h3>Select Year</h3>
         <Form.Item
-          label="Select Year"
           name="Year"
           initialValue={selectedYear}
           rules={[
@@ -125,7 +127,7 @@ const BatchesForm = () => {
           ]}
         >
           <Select
-            style={{ width: 120 }}
+            style={{ width: "25%" }}
             placeholder="Select Year"
             onChange={handleYearChange}
             options={[
@@ -136,7 +138,6 @@ const BatchesForm = () => {
             ]}
           />
         </Form.Item>
-
         {selectedYear &&
           depts.map((dept, i) => (
             <div key={i}>
@@ -153,7 +154,7 @@ const BatchesForm = () => {
               >
                 <Select
                   mode="tags"
-                  style={{ width: "200%" }}
+                  style={{ width: "90%" }}
                   placeholder={`Add Exams for ${dept.name}`}
                   onChange={(value) =>
                     handleFieldChange("initialValues", value, dept.name)
@@ -169,7 +170,8 @@ const BatchesForm = () => {
                 <Form.Item
                   label="Regular Strength"
                   name={`reg${dept.name}`}
-                  initialValue={dept.reg}
+                  // initialValue={dept.reg}
+                  initialValue={dept.reg || 20}
                   rules={[
                     {
                       required: true,
@@ -183,7 +185,8 @@ const BatchesForm = () => {
                     max={500}
                     placeholder="Regular Strength"
                     style={{ width: "200px", marginRight: "40px" }}
-                    value={dept.reg}
+                    // value={dept.reg}
+                    value={dept.reg || 20}
                     onChange={(value) =>
                       handleFieldChange("reg", value, dept.name)
                     }
@@ -193,7 +196,8 @@ const BatchesForm = () => {
                 <Form.Item
                   label="LET Strength"
                   name={`let${dept.name}`}
-                  initialValue={dept.let}
+                  // initialValue={dept.let}
+                  initialValue={dept.let || 20}
                   rules={[
                     { required: true, message: "Please enter LET Strength" },
                   ]}
@@ -204,7 +208,8 @@ const BatchesForm = () => {
                     max={40}
                     placeholder="LET Strength"
                     style={{ width: "200px", marginRight: "40px" }}
-                    value={dept.let}
+                    // value={dept.let}
+                    value={dept.let || 20}
                     onChange={(value) =>
                       handleFieldChange("let", value, dept.name)
                     }
@@ -277,13 +282,12 @@ const BatchesForm = () => {
                   />
                 </Form.Item>
               </FlexContainer>
-              <br />
             </div>
           ))}
-
         <Form.Item>
           <Popconfirm
-            onConfirm={allFieldsFilled() ? submitForm : null}
+            // onConfirm={allFieldsFilled() ? submitForm : null}
+            onConfirm={!allFieldsFilled() ? submitForm : null}
             title="Current year exams data will be overwritten!"
             description="Are you sure you want to submit?"
             icon={<QuestionCircleOutlined style={{ color: "red" }} />}
@@ -291,7 +295,7 @@ const BatchesForm = () => {
             <Button
               type="primary"
               htmlType="submit"
-              disabled={!allFieldsFilled()}
+              // disabled={!allFieldsFilled()}
             >
               Submit
             </Button>

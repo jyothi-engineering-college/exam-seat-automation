@@ -4,6 +4,7 @@ import {
   SET_ALLOCATED_DATA,
   SET_ALLOCATION_DETAILS,
   SET_SINGLE_CLASS,
+  SET_SLOT_LOADING,
   SET_SLOTS,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
@@ -50,6 +51,12 @@ const reducer = (state, action) => {
         selectedSlotName: action.payload.selectedSlotName,
         dateTime: action.payload.dateTime,
       };
+    case SET_SLOT_LOADING:
+      return {
+        ...state,
+        isLoading: action.payload.isLoading,
+        selectedSlotName: action.payload.selectedSlotName,
+      };
     case SET_ALLOCATED_DATA:
       return {
         ...state,
@@ -57,17 +64,19 @@ const reducer = (state, action) => {
         deptView: action.payload.deptView,
         classroomView: action.payload.classroomView,
         classNames: action.payload.classNames,
+        isLoading: false,
       };
     case SET_SINGLE_CLASS:
       return {
         ...state,
         singleClassView: action.payload.singleClassView,
-      }
+        singleClassName: action.payload.singleClassName,
+      };
     case SET_ACADEMIC_YEAR:
       return {
         ...state,
-        academicYear:action.payload.academicYear
-      }
+        academicYear: action.payload.academicYear,
+      };
 
     default:
       throw new Error(`Undefined Action :${action.type}`);

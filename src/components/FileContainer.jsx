@@ -55,6 +55,8 @@ const FileContainer = () => {
         setWorkbook(null);
       }
     } catch (error) {
+      setUploading(true);
+
       console.error("Error uploading file:", error);
     }
   };
@@ -65,34 +67,53 @@ const FileContainer = () => {
 
   return (
     <>
-      {destination === "subjectsform" ? "Add Subjects" : "Add Exam Halls"}
-      <div>
+      <div className="file-form">
+        {destination === "subjectsform" ? (
+          <h3>Add Subjects</h3>
+        ) : (
+          <h3>Add Exam Halls</h3>
+        )}
         <FlexContainer>
           <Upload
+            className="upload-btn"
             beforeUpload={handleFileUpload}
             showUploadList={false}
             accept=".xlsx, .xls"
           >
-            <Button>Select Subject Workbook</Button>
+            <Button>
+              {!workbook ? "Select Subject Workbook" : "Change Workbook"}
+            </Button>
           </Upload>
           &nbsp;
           {destination === "subjectsform" ? (
-            <Alert
-              message="The file should have columns of DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
-              type="info"
-            />
+            <>
+              {!workbook ? (
+                <Alert
+                  message="The file should only have columns named DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
+                  type="info"
+                />
+              ) : (
+                <Alert message="File Selected" type="success" />
+              )}
+            </>
           ) : (
-            <Alert
-              message="The file should have columns of Semester	| Classroom | No:of desks | Department
- "
-              type="info"
-            />
+            <>
+              {!workbook ? (
+                <Alert
+                  message="The file should only have  columns named Semester | Classroom | No:of desks | Department"
+                  type="info"
+                />
+              ) : (
+                <Alert message="File Selected" type="success" />
+              )}
+            </>
           )}
         </FlexContainer>
+        <br />
         <Popconfirm
           onConfirm={handleUpload}
           onCancel={handleCancel}
-          title="All current subjects data will be OVERWRITTEN!"
+          title="All current academic data including batches will be deleted !"
           description="Are you sure you want to submit?"
           icon={<QuestionCircleOutlined style={{ color: "red" }} />}
         >

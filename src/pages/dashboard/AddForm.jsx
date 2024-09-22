@@ -2,6 +2,8 @@ import queryString from "query-string";
 import { useLocation } from "react-router-dom";
 import FileContainer from "../../components/FileContainer";
 import BatchesForm from "../../components/BatchesForm";
+import "../../styles/Addform.css";
+
 const AddForm = () => {
   const location = useLocation();
   const { destination } = queryString.parse(location.search);

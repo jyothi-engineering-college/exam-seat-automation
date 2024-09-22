@@ -6,35 +6,40 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 const NoticeTable = () => {
-  const { noticeBoardView,dateTime } = useAppContext(); // Access noticeBoardView from context
+  const { noticeBoardView, dateTime, classroomView, setSingleClassView,classNames } =
+    useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  // useEffect to update the data whenever noticeBoardView changes
+
   useEffect(() => {
     if (noticeBoardView.length > 0) {
-      setData(noticeBoardView); // Set the new data from noticeBoardView
-    }
-  }, [noticeBoardView]); // Dependency array includes noticeBoardView
 
-  const filteredResults = filteredData(data, searchTerm); // Filtered data based on searchTerm
+      setData(noticeBoardView);
+    }
+  }, [noticeBoardView]);
+
+  const filteredResults = filteredData(data, searchTerm);
 
   const formatItems = (items) => {
-    // Group the items into pairs and join them with a hyphen and line break
     return items
       .map((item, index) => {
         if (index % 2 === 0 && items[index + 1]) {
-          return `${item} - ${items[index + 1]}`; // Join pairs of adjacent items with a hyphen
+          return `${item} - ${items[index + 1]}`;
         }
-        return null; // Skip odd indexed items as they are already paired
+        return null;
       })
-      .filter(Boolean) // Remove null values
-      .join("<br />"); // Join pairs with a line break
+      .filter(Boolean)
+      .join("<br /><br />");
   };
 
   const formatCount = (counts) => {
-    return counts ? counts.join("<br />") : "0"; // Join count values with a line break
+    return counts ? counts.join("<br /><br />") : "0";
+  };
+  const handleClick = (index) => {
+    setSingleClassView(classroomView[index],classNames[index]);
+    navigate("/print?destination=class"); 
   };
 
   const columns = [
@@ -47,15 +52,31 @@ const NoticeTable = () => {
     {
       name: "Register No",
       selector: (row) => (
-        <div dangerouslySetInnerHTML={{ __html: formatItems(row.items) }} />
+        <div
+          style={{ marginTop: "10px", marginBottom: "10px" }}
+          dangerouslySetInnerHTML={{ __html: formatItems(row.items) }}
+        />
       ),
-      sortable: true,
       wrap: true,
     },
     {
       name: "Count",
       selector: (row) => (
         <div dangerouslySetInnerHTML={{ __html: formatCount(row.count) }} />
+      ),
+      wrap: true,
+    },
+    {
+      name: "Hall arrangement",
+      selector: (row, i) => (
+        <Button
+          className="printbutton"
+          onClick={() => handleClick(i)}
+          key={i}
+          type="primary"
+        >
+          Print Hall
+        </Button>
       ),
       wrap: true,
     },
@@ -67,11 +88,12 @@ const NoticeTable = () => {
     filteredResults,
     searchTerm,
     setSearchTerm,
+    dateTime,
+    disablepagination: true,
   };
 
   return (
     <>
-      {dateTime && <h3>{dateTime}</h3>}
       <TableContainer {...props} />
       <center>
         <Button

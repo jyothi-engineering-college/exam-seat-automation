@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import "../styles/Print.css";
+
 const ClassPrint = () => {
-  const { singleClassView } = useAppContext();
+  const { singleClassView, singleClassName, dateTime } = useAppContext();
 
   if (!singleClassView || singleClassView.length === 0) {
     return <p>No data available to display</p>;
@@ -26,6 +27,11 @@ const ClassPrint = () => {
   return (
     <table className="table">
       <thead>
+        <tr>
+          <th colSpan={headers.length} style={{ textAlign: "center" }}>
+            {singleClassName} ( {dateTime} )
+          </th>
+        </tr>
         <tr>
           {headers.map((header, index) => (
             <th key={index}>{header}</th>

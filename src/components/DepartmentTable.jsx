@@ -6,7 +6,7 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 const DepartmentTable = () => {
-  const { deptView } = useAppContext(); // Access deptView from context
+  const { deptView, dateTime } = useAppContext(); // Access deptView from context
    const navigate = useNavigate(); // Use navigate to change routes
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,12 +28,12 @@ const DepartmentTable = () => {
         return null; // Skip odd indexed items as they are already paired
       })
       .filter(Boolean) // Remove null values
-      .join("<br />"); // Join pairs with a line break
+      .join("<br /><br />"); // Join pairs with a line break
   };
 
   const formatCounts = (counts) => {
     // Join count values with a line break
-    return counts.join("<br />");
+    return counts.join("<br /><br />");
   };
 
   const filteredResults = filteredData(data, searchTerm); // Filtered data based on searchTerm
@@ -48,7 +48,10 @@ const DepartmentTable = () => {
     {
       name: "Room",
       selector: (row) => (
-        <div dangerouslySetInnerHTML={{ __html: formatCounts(row.rooms) }} />
+        <div
+          style={{ marginTop: "10px", marginBottom: "10px" }}
+          dangerouslySetInnerHTML={{ __html: formatCounts(row.rooms) }}
+        />
       ),
       wrap: true,
     },
@@ -74,10 +77,11 @@ const DepartmentTable = () => {
     filteredResults,
     searchTerm,
     setSearchTerm,
+    dateTime
   };
 
   return (
-    <>
+    <div className="dept-view">
       <TableContainer {...props} />
       <center>
         <Button
@@ -89,7 +93,7 @@ const DepartmentTable = () => {
           PRINT
         </Button>
       </center>
-    </>
+    </div>
   );
 };
 

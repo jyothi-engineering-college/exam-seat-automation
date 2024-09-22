@@ -2,7 +2,7 @@ import { Collapse, ConfigProvider, Select } from "antd"; // Import ConfigProvide
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { test } from "../utils/seatAllocator";
-import { set } from "lodash";
+import { CaretRightOutlined } from "@ant-design/icons";
 
 const TodayExam = () => {
   const {
@@ -18,6 +18,7 @@ const TodayExam = () => {
     examToday,
     setAllocatedData,
     selectedSlotName,
+    deptView
   } = useAppContext();
   const [slotNames, setSlotNames] = useState([]);
   const [slotChanged, setSlotChanged] = useState(false);
@@ -27,7 +28,7 @@ const TodayExam = () => {
       setSlotChanged(false);
     } else {
       setSlotChanged(true);
-      await fetchExamData(slots[slot], slot);
+      await fetchExamData(slots[slot], slot,selectedSlotName);
     }
   };
 
@@ -76,18 +77,24 @@ const TodayExam = () => {
   const items = [
     {
       key: "1",
-      label: "Today's Exams",
+      label: "Exam list",
       children: (
-        <div className="tcwrap">
-          {examToday.map((exam, index) => (
-            <div key={index} className="tcard">
-              <img src="../book.svg" alt="hi" />
-              <div className="cdet">
-                <h3>{exam}</h3>
-                <p>Slot {selectedSlotName}</p>
-              </div>
+        <div className="todayContainer">
+          {" "}
+          <center>
+            {" "}
+            {selectedSlotName && <h2>Slot {selectedSlotName}</h2>}
+            <div className="tcwrap">
+              {examToday.map((exam, index) => (
+                <div key={index} className="tcard">
+                  <img src="../book.svg" alt="hi" />
+                  <div className="cdet">
+                    <h3>{exam}</h3>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </center>
         </div>
       ),
     },
@@ -107,6 +114,7 @@ const TodayExam = () => {
           <Select
             id="slot-select"
             defaultValue={selectedSlotName}
+            value={selectedSlotName}
             style={{
               width: 250,
               borderColor: "#f0f9ff",
@@ -122,13 +130,25 @@ const TodayExam = () => {
             }}
           />
         </center>
-        <br />
-        <Collapse
-          defaultActiveKey={[]}
-          items={items}
-          collapsible="header"
-          style={{ width: "97%", margin: "0 auto" }}
-        />
+        {Object.keys(deptView).length !== 0 && (
+          <>
+            <h3 className="tdhd">Today's Exam</h3>
+            <div className="underline"></div>
+            <Collapse
+              defaultActiveKey={[]}
+              expandIcon={({ isActive }) => (
+                <CaretRightOutlined rotate={isActive ? 90 : 0} />
+              )}
+              items={items}
+              collapsible="header"
+              style={{
+                width: "97%",
+                margin: "0 auto",
+                background: "#f0f9ff",
+              }}
+            />
+          </>
+        )}
       </>
     </ConfigProvider>
   );

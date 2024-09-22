@@ -42,6 +42,7 @@ const SubjectsTable = () => {
       selector: (row) => row["COURSE NAME"],
       sortable: true,
       wrap: true,
+      width: "600px",
     },
     {
       name: "Slot",
