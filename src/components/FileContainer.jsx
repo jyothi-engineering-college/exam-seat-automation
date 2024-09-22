@@ -65,10 +65,15 @@ const FileContainer = () => {
 
   return (
     <>
-      {destination === "subjectsform" ? "Add Subjects" : "Add Exam Halls"}
-      <div>
+      <div className="file-form">
+        {destination === "subjectsform" ? (
+          <h3>Add Subjects</h3>
+        ) : (
+          <h3>Add Exam Halls</h3>
+        )}
         <FlexContainer>
           <Upload
+            className="upload-btn"
             beforeUpload={handleFileUpload}
             showUploadList={false}
             accept=".xlsx, .xls"
@@ -78,17 +83,17 @@ const FileContainer = () => {
           &nbsp;
           {destination === "subjectsform" ? (
             <Alert
-              message="The file should have columns of DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
+              message="The file should only have columns named DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
               type="info"
             />
           ) : (
             <Alert
-              message="The file should have columns of Semester	| Classroom | No:of desks | Department
- "
+              message="The file should only have  columns named Semester | Classroom | No:of desks | Department"
               type="info"
             />
           )}
         </FlexContainer>
+        <br />
         <Popconfirm
           onConfirm={handleUpload}
           onCancel={handleCancel}

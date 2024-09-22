@@ -3,7 +3,8 @@ import { useAppContext } from "../context/AppContext";
 import "../styles/Print.css";
 const ClassPrint = () => {
   const { singleClassView } = useAppContext();
-
+    console.log(singleClassView);
+    
   if (!singleClassView || singleClassView.length === 0) {
     return <p>No data available to display</p>;
   }

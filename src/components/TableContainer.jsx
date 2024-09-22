@@ -46,15 +46,16 @@ const TableContainer = ({
   selectableRows,
   selectableRowSelected,
   handleRowSelected,
+  dateTime,
+  disablepagination,
 }) => {
   return (
     <div className="table-container">
       <div className="header-container">
         <div className="heading-left">
-          <center>
-            <h6 className="tdhd">{tableName}</h6>
-          </center>
+          <h6 className="tableheading">{tableName}</h6>
         </div>
+        {dateTime && <h6 className="date-time">{dateTime}</h6>}
 
         {academicYear != null && (
           <ConfigProvider
@@ -96,8 +97,8 @@ const TableContainer = ({
             columns={columns}
             data={filteredResults}
             defaultSortAsc={true}
-            pagination
-            paginationPerPage={30}
+            pagination={disablepagination ? false : true}
+            paginationPerPage={10}
             theme="custom"
             customStyles={tableCustomStyles}
             selectableRows={selectableRows}

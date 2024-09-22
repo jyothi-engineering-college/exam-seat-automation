@@ -6,6 +6,7 @@ import {
   SET_ALLOCATED_DATA,
   SET_ALLOCATION_DETAILS,
   SET_SINGLE_CLASS,
+  SET_SLOT_LOADING,
   SET_SLOTS,
   SETUP_USER_BEGIN,
   SETUP_USER_ERROR,
@@ -87,6 +88,7 @@ const AppProvider = ({ children }) => {
           email,
           password
         );
+
         const createUser = data.user;
         await setDoc(doc(db, "users", createUser.uid), {
           username: username,
@@ -95,6 +97,8 @@ const AppProvider = ({ children }) => {
         user = { username, email };
       } else {
         let data = await signInWithEmailAndPassword(auth, email, password);
+        console.log(data);
+
         const userEmail = data.user.email;
 
         const usersCollection = collection(db, "users");
@@ -940,8 +944,14 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const fetchExamData = async (examToday, selectedSlotName) => {
-    showAlert("loading", "Fetching Exam Data ...");
+  const fetchExamData = async (examToday, selectedSlotName, prevslot) => {
+    dispatch({
+      type: SET_SLOT_LOADING,
+      payload: {
+        isLoading: true,
+        selectedSlotName:prevslot
+      },
+    });
     const examHallDocRef = doc(db, "Classes", "AllotedClasses");
     const examsDocRef = doc(db, "DeptDetails", "Exams");
     const letDocRef = doc(db, "DeptDetails", "LetStrength");
@@ -979,7 +989,7 @@ const AppProvider = ({ children }) => {
           .filter((key) => key.startsWith(selectedSlotName))
           .reduce((formatted, key) => {
             const startTime = dayjs(datetimeData[key][0]).format(
-              "DD-MM-YYYY hh:mm A"
+              "DD-MM-YYYY | hh:mm A"
             );
             const endTime = dayjs(datetimeData[key][1]).format("hh:mm A");
 
@@ -987,6 +997,13 @@ const AppProvider = ({ children }) => {
             return `${startTime} - ${endTime}`;
           }, "");
         if (dateTime === "") {
+          dispatch({
+            type: SET_SLOT_LOADING,
+            payload: {
+              isLoading: false,
+              selectedSlotName: prevslot,
+            },
+          });
           throw new Error("No date-time data found for the selected slot !");
         }
 
@@ -1004,9 +1021,15 @@ const AppProvider = ({ children }) => {
             dateTime,
           },
         });
-        showAlert("success", "Exam Data Fetched Successfully !");
       } else {
-        showAlert("warning", "The Slot is Empty !");
+        dispatch({
+          type: SET_SLOT_LOADING,
+          payload: {
+            isLoading: false,
+            selectedSlotName: prevslot,
+          },
+        });
+        showAlert("warning", " Insufficient data for allocating the seats !");
         console.log("No such document!");
         return [];
       }

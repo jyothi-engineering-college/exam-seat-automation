@@ -63,19 +63,21 @@ const BatchesTable = () => {
   const filteredResults = filteredData(data, searchTerm);
   const columns = [
     {
-      name: "Name",
+      name: "Dept",
       selector: (row) => row.deptName,
       sortable: true,
       wrap: true,
+      width: "100px",
     },
     {
       name: "Subjects",
-      selector: (row) => row.exams.join(", "),
+      selector: (row) => row.exams.join(" ║ "),
       sortable: true,
+      width: "400px",
       wrap: true,
     },
     {
-      name: "Regular",
+      name: "Reg",
       selector: (row) =>
         editingKey == row.deptName ? (
           <Form.Item
@@ -92,7 +94,7 @@ const BatchesTable = () => {
               min={1}
               max={500}
               placeholder="Regular Strength"
-              style={{ width: "150px" }}
+              style={{ width: "100%" }}
               value={editData.regStrength}
               onChange={(value) => handleChange(value, "regStrength")}
             />
@@ -102,6 +104,7 @@ const BatchesTable = () => {
         ),
       sortable: true,
       wrap: true,
+      width: "100px",
     },
     {
       name: "LET",
@@ -121,7 +124,7 @@ const BatchesTable = () => {
               min={1}
               max={500}
               placeholder="Let Strength"
-              style={{ width: "150px" }}
+              style={{ width: "100%" }}
               value={editData.letStrength}
               onChange={(value) => handleChange(value, "letStrength")}
             />
@@ -131,6 +134,7 @@ const BatchesTable = () => {
         ),
       sortable: true,
       wrap: true,
+      width: "100px",
     },
     {
       name: "Dropped",
@@ -146,8 +150,8 @@ const BatchesTable = () => {
             ]}
           >
             <Select
+              style={{ minWidth: "200px" }}
               mode="tags"
-              style={{ minWidth: "150px" }}
               placeholder="Add Dropped students"
               value={editData.drop}
               onChange={(value) => handleChange(value, "drop")}
@@ -174,7 +178,7 @@ const BatchesTable = () => {
           >
             <Select
               mode="tags"
-              style={{ minWidth: "150px" }}
+              style={{ minWidth: "200px" }}
               placeholder="Add Rejoined students"
               value={editData.rejoin}
               onChange={(value) => handleChange(value, "rejoin")}
