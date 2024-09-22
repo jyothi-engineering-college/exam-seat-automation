@@ -17,9 +17,7 @@ const SlotsTable = () => {
   const [editData, setEditData] = useState({});
 
   useEffect(() => {    
-    fetchSlots().then((data) => {
-      console.log(data);
-      
+    fetchSlots().then((data) => {      
       setData(data);
     });
   }, [fetchSlots]);

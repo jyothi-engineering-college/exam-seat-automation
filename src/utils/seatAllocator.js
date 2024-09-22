@@ -9,7 +9,7 @@ export const test = (
   examToday
 ) => {
   console.log("Allocating seats");
-  
+
   let sup = {};
 
   Object.keys(sup).forEach((key) => {
@@ -417,18 +417,24 @@ export const test = (
 
     return counts;
   };
+  const noticeBoardView = classes
+    .map((cls, idx) => {
+      const allItems = cls.flat();
+      const consolidatedItems = consolidateItems(allItems);
+      const counts = calculateCounts(consolidatedItems, sup);
 
-  const noticeBoardView = classes.map((cls, idx) => {
-    const allItems = cls.flat();
-    const consolidatedItems = consolidateItems(allItems);
-    const counts = calculateCounts(consolidatedItems, sup);
-
-    return {
-      class: classNames[idx],
-      items: consolidatedItems,
-      count: counts,
-    };
-  });
+      // Return only if consolidatedItems is not empty
+      if (consolidatedItems.length > 0) {
+        return {
+          class: classNames[idx],
+          items: consolidatedItems,
+          count: counts,
+        };
+      }
+      return null; // Exclude empty objects
+    })
+    .filter(Boolean);
+  
 
   //   function attendanceSheet(singleClass, className) {
   //     const oddIndexedStudents = [];

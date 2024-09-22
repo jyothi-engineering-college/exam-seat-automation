@@ -3,8 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import "../styles/Printdept.css";
 
 const PrintDept = () => {
-  const { deptView } = useAppContext();
-  console.log(deptView);
+  const { deptView, dateTime } = useAppContext();
 
   const createItemPairs = (items) => {
     let pairs = [];
@@ -26,33 +25,40 @@ const PrintDept = () => {
 
   return (
     <div>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Department</th>
-            <th>Room</th>
-            <th>Roll Numbers</th>
-            <th>Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          {deptView.map((item, index) => {
-            const pairs = createItemPairs(item.rollNums);
-            return item.rooms.map((room, roomIndex) => (
-              <tr key={`${index}-${roomIndex}`}>
-                {roomIndex === 0 ? (
-                  <td className="class-column" rowSpan={item.rooms.length}>
-                    {item.dept}
-                  </td>
-                ) : null}
-                <td>{room}</td>
-                <td>{pairs[roomIndex] || "-"}</td>
-                <td>{item.count[roomIndex] || "-"}</td>
-              </tr>
-            ));
-          })}
-        </tbody>
-      </table>
+      {deptView.length>=0 && (
+        <table className="table">
+          <thead>
+            <tr>
+              <th colSpan={4} style={{ textAlign: "center" }}>
+                {dateTime}
+              </th>
+            </tr>
+            <tr>
+              <th>Department</th>
+              <th>Room</th>
+              <th>Roll Numbers</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deptView.map((item, index) => {
+              const pairs = createItemPairs(item.rollNums);
+              return item.rooms.map((room, roomIndex) => (
+                <tr key={`${index}-${roomIndex}`}>
+                  {roomIndex === 0 ? (
+                    <td className="class-column" rowSpan={item.rooms.length}>
+                      {item.dept}
+                    </td>
+                  ) : null}
+                  <td>{room}</td>
+                  <td>{pairs[roomIndex] || "-"}</td>
+                  <td>{item.count[roomIndex] || "-"}</td>
+                </tr>
+              ));
+            })}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };

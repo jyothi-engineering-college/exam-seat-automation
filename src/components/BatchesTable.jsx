@@ -25,19 +25,21 @@ const BatchesTable = () => {
   const [editData, setEditData] = useState({});
 
   useEffect(() => {
-    fetchBatches().then((data) => {
-      setData(data);
-    });
-  }, [fetchBatches]);
-
-  useEffect(() => {
     fetchAcademicYear();
   }, []);
+
+  useEffect(() => {
+    console.log("Working");
+    if(academicYear){
+      fetchBatches(academicYear).then((data) => {
+        setData(data);
+      });
+    }
+  }, [fetchBatches, academicYear]);
 
   const handleEdit = (key) => {
     setEditingKey(key);
     const record = data.find((item) => item.deptName === key);
-    console.log(record);
 
     setEditData({ ...record });
   };

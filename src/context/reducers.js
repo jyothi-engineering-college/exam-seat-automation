@@ -52,7 +52,6 @@ const reducer = (state, action) => {
         dateTime: action.payload.dateTime,
       };
     case SET_SLOT_LOADING:
-      console.log("Reducer received action:", action);
       return {
         ...state,
         isLoading: action.payload.isLoading,
@@ -71,6 +70,7 @@ const reducer = (state, action) => {
       return {
         ...state,
         singleClassView: action.payload.singleClassView,
+        singleClassName: action.payload.singleClassName,
       };
     case SET_ACADEMIC_YEAR:
       return {

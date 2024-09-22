@@ -55,6 +55,8 @@ const FileContainer = () => {
         setWorkbook(null);
       }
     } catch (error) {
+      setUploading(true);
+
       console.error("Error uploading file:", error);
     }
   };
@@ -78,19 +80,33 @@ const FileContainer = () => {
             showUploadList={false}
             accept=".xlsx, .xls"
           >
-            <Button>Select Subject Workbook</Button>
+            <Button>
+              {!workbook ? "Select Subject Workbook" : "Change Workbook"}
+            </Button>
           </Upload>
           &nbsp;
           {destination === "subjectsform" ? (
-            <Alert
-              message="The file should only have columns named DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
-              type="info"
-            />
+            <>
+              {!workbook ? (
+                <Alert
+                  message="The file should only have columns named DEPT	| SEM | SLOT | COURSE CODE | COURSE NAME |	L	| T	| P |	HOURS | CREDIT  "
+                  type="info"
+                />
+              ) : (
+                <Alert message="File Selected" type="success" />
+              )}
+            </>
           ) : (
-            <Alert
-              message="The file should only have  columns named Semester | Classroom | No:of desks | Department"
-              type="info"
-            />
+            <>
+              {!workbook ? (
+                <Alert
+                  message="The file should only have  columns named Semester | Classroom | No:of desks | Department"
+                  type="info"
+                />
+              ) : (
+                <Alert message="File Selected" type="success" />
+              )}
+            </>
           )}
         </FlexContainer>
         <br />

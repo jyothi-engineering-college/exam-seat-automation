@@ -6,12 +6,8 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 const NoticeTable = () => {
-  const {
-    noticeBoardView,
-    dateTime,
-    classroomView,
-    setSingleClassView,
-  } = useAppContext();
+  const { noticeBoardView, dateTime, classroomView, setSingleClassView,classNames } =
+    useAppContext();
 
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,7 +15,6 @@ const NoticeTable = () => {
 
   useEffect(() => {
     if (noticeBoardView.length > 0) {
-      console.log(noticeBoardView);
 
       setData(noticeBoardView);
     }
@@ -43,8 +38,8 @@ const NoticeTable = () => {
     return counts ? counts.join("<br /><br />") : "0";
   };
   const handleClick = (index) => {
-    setSingleClassView(classroomView[index]);
-    navigate("/print?destination=class"); // Navigate to /print after setting the view
+    setSingleClassView(classroomView[index],classNames[index]);
+    navigate("/print?destination=class"); 
   };
 
   const columns = [
@@ -74,7 +69,12 @@ const NoticeTable = () => {
     {
       name: "Hall arrangement",
       selector: (row, i) => (
-        <Button className="printbutton" onClick={() => handleClick(i)} key={i} type="primary">
+        <Button
+          className="printbutton"
+          onClick={() => handleClick(i)}
+          key={i}
+          type="primary"
+        >
           Print Hall
         </Button>
       ),
@@ -89,7 +89,7 @@ const NoticeTable = () => {
     searchTerm,
     setSearchTerm,
     dateTime,
-    disablepagination:true
+    disablepagination: true,
   };
 
   return (

@@ -286,7 +286,8 @@ const BatchesForm = () => {
           ))}
         <Form.Item>
           <Popconfirm
-            onConfirm={allFieldsFilled() ? submitForm : null}
+            // onConfirm={allFieldsFilled() ? submitForm : null}
+            onConfirm={!allFieldsFilled() ? submitForm : null}
             title="Current year exams data will be overwritten!"
             description="Are you sure you want to submit?"
             icon={<QuestionCircleOutlined style={{ color: "red" }} />}
@@ -294,7 +295,7 @@ const BatchesForm = () => {
             <Button
               type="primary"
               htmlType="submit"
-              disabled={!allFieldsFilled()}
+              // disabled={!allFieldsFilled()}
             >
               Submit
             </Button>

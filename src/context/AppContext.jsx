@@ -25,6 +25,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import dayjs from "dayjs";
 import * as XLSX from "xlsx";
@@ -52,6 +53,7 @@ const initialState = {
   classroomView: [],
   classNames: [],
   singleClassView: [],
+  singleClassName: "",
   selectedSlotName: "",
   dateTime: "",
   academicYear: null,
@@ -97,8 +99,6 @@ const AppProvider = ({ children }) => {
         user = { username, email };
       } else {
         let data = await signInWithEmailAndPassword(auth, email, password);
-        console.log(data);
-
         const userEmail = data.user.email;
 
         const usersCollection = collection(db, "users");
@@ -196,7 +196,6 @@ const AppProvider = ({ children }) => {
     const LetFields = getDeptFields("let");
     const dropFields = getDeptFields("drop");
     const rejoinFields = getDeptFields("rejoin");
-    console.log(RegFields);
 
     try {
       if (Object.keys(SubFields).length > 0)
@@ -216,7 +215,16 @@ const AppProvider = ({ children }) => {
       throw new Error(`${error.message}`);
     }
   };
-  const fetchBatches = async () => {
+  const fetchBatches = async (academicYear) => {
+    console.log(academicYear.year());
+    const years = [
+      academicYear.year().toString().slice(-2),
+      (academicYear.year() - 1).toString().slice(-2),
+      (academicYear.year() - 2).toString().slice(-2),
+      (academicYear.year() - 3).toString().slice(-2),
+    ];
+    console.log(years);
+
     // showAlert("loading", "Fetching Batch Details ...");
     const examsRef = doc(firestore, "DeptDetails", "Exams");
     const regStrengthRef = doc(firestore, "DeptDetails", "RegularStrength");
@@ -243,26 +251,44 @@ const AppProvider = ({ children }) => {
         dropSnap.exists() &&
         rejoinSnap.exists()
       ) {
+        // Get all department names that start with the items in the years array
+        const filterFields = (data) => {
+          return Object.keys(data)
+            .filter((key) => years.some((year) => key.startsWith(year)))
+            .reduce((obj, key) => {
+              obj[key] = data[key];
+              return obj;
+            }, {});
+        };
+
+        const examsData = filterFields(examsSnap.data());
+        const regData = filterFields(regSnap.data());
+        const letData = filterFields(letSnap.data());
+        const dropData = filterFields(dropSnap.data());
+        const rejoinData = filterFields(rejoinSnap.data());
+
         // Get all department names (assuming all snaps have the same department keys)
         const deptNames = Object.keys({
-          ...examsSnap.data(),
-          ...regSnap.data(),
-          ...letSnap.data(),
-          ...dropSnap.data(),
-          ...rejoinSnap.data(),
+          ...examsData,
+          ...regData,
+          ...letData,
+          ...dropData,
+          ...rejoinData,
         });
 
         deptNames.forEach((deptName) => {
           formattedData.push({
             deptName,
-            letStrength: letSnap.data()[deptName] || null,
-            regStrength: regSnap.data()[deptName] || null,
-            exams: examsSnap.data()[deptName] || [],
-            drop: dropSnap.data()[deptName] || null,
-            rejoin: rejoinSnap.data()[deptName] || null,
+            letStrength: letData[deptName] || null,
+            regStrength: regData[deptName] || null,
+            exams: examsData[deptName] || [],
+            drop: dropData[deptName] || null,
+            rejoin: rejoinData[deptName] || null,
           });
         });
       }
+      console.log(formattedData);
+
       return formattedData;
     } catch (error) {
       showAlert("error", error.message);
@@ -310,18 +336,8 @@ const AppProvider = ({ children }) => {
 
     try {
       const examsDocRef = doc(db, "DeptDetails", "Exams");
-      const letDocRef = doc(db, "DeptDetails", "LetStrength");
-      const regDocRef = doc(db, "DeptDetails", "RegularStrength");
-      const dropDocRef = doc(db, "DeptDetails", "Dropped");
-      const rejoinDocRef = doc(db, "DeptDetails", "Rejoined");
 
-      const docRefs = [
-        examsDocRef,
-        letDocRef,
-        regDocRef,
-        dropDocRef,
-        rejoinDocRef,
-      ];
+      const docRefs = [examsDocRef];
 
       const updateCollection = async (docRef) => {
         const docSnap = await getDoc(docRef);
@@ -350,7 +366,6 @@ const AppProvider = ({ children }) => {
           }
 
           await setDoc(docRef, updatedData, { merge: false });
-          console.log(`${docRef.id} data replaced:`, updatedData);
         }
       };
 
@@ -369,7 +384,7 @@ const AppProvider = ({ children }) => {
 
       showAlert("success", `Academic year changed to ${academicYear.year()}`);
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       dispatch({
         type: SET_ACADEMIC_YEAR,
@@ -380,7 +395,35 @@ const AppProvider = ({ children }) => {
   };
 
   const uploadSubFile = async (workbook, updateProgress, cancelToken) => {
+    showAlert("warning", "Deleting current Subjects and Slots data ...");
+          const subjectsCollection = collection(db, "Subjects");
+      const slotsDocRef = doc(db, "AllExams", "Slots");
+      const editedSlotsDocRef = doc(db, "AllExams", "EditedSlots");
     try {
+
+
+      const querySnapshot = await getDocs(subjectsCollection);
+      const batch = writeBatch(db); // Create a new batch
+
+      // Delete all documents in the Subjects collection
+      querySnapshot.forEach((doc) => {
+        batch.delete(doc.ref); // Add delete operation to the batch
+      });
+
+      // Delete the Slots and EditedSlots documents
+      batch.delete(slotsDocRef);
+      batch.delete(editedSlotsDocRef);
+
+      // Commit the batch
+      await batch.commit();
+      console.log(
+        "All documents in the Subjects collection and Slots/EditedSlots have been deleted."
+      );
+      showAlert(
+        "success",
+        "Subjects and Slots data deleted..Uploading new Data !"
+      );
+
       const expectedHeaders = [
         "DEPT",
         "SEM",
@@ -399,7 +442,7 @@ const AppProvider = ({ children }) => {
       };
 
       if (!workbook) {
-        showAlert("error", "Wrong Format !");
+        throw new Error("No Workbook Found!");
       }
 
       const sheetNames = workbook.SheetNames;
@@ -422,8 +465,6 @@ const AppProvider = ({ children }) => {
         totalItems += data.slice(1).filter((row) => row.length > 0).length;
       });
 
-      console.log(totalItems);
-
       let processedItems = 0;
       let slotsData = {}; // To accumulate slot data
 
@@ -432,12 +473,11 @@ const AppProvider = ({ children }) => {
 
         const sheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Raw data with headers
-        console.log(`Processing sheet: ${sheetName}`);
 
         const headers = data[0]; // Extract headers from the first row
 
         if (!validateHeaders(headers)) {
-          showAlert("error", "Invalid Headers in the sheet !");
+          throw new Error(`Invalid headers in sheet ${sheetName}`);
         }
 
         for (const row of data.slice(1)) {
@@ -473,7 +513,6 @@ const AppProvider = ({ children }) => {
 
           // Upload individual subject data to Firestore
           try {
-            const subjectsCollection = collection(db, "Subjects");
             const courseCodeDept = `${item["SEM"]}_${item["DEPT"]}_${item["COURSE CODE"]}`; // Unique document name
 
             await setDoc(doc(subjectsCollection, courseCodeDept), item);
@@ -482,25 +521,23 @@ const AppProvider = ({ children }) => {
             const percent = Math.round((processedItems / totalItems) * 100);
             updateProgress(percent);
           } catch (docError) {
-            showAlert(
-              "error",
+            throw new Error(
               `Error uploading document for COURSE CODE: ${item["COURSE CODE"]}, ${docError.message} !`
             );
           }
         }
       }
       // Upload the accumulated slots data after processing all subjects
-      const slotsDocRef = doc(db, "AllExams", "Slots");
-      const editedslotsDocRef = doc(db, "AllExams", "EditedSlots");
 
       await setDoc(slotsDocRef, slotsData, { merge: true });
-      await setDoc(editedslotsDocRef, slotsData, { merge: true });
+      await setDoc(editedSlotsDocRef, slotsData, { merge: true });
 
       if (cancelToken.current !== false) {
         showAlert("success", "Subjects and slots updated !");
         updateProgress(100);
       } else {
         showAlert("warning", "Upload Cancelled !");
+        throw new Error("Upload Cancelled !");
       }
     } catch (error) {
       updateProgress(0);
@@ -522,8 +559,7 @@ const AppProvider = ({ children }) => {
         JSON.stringify(headers) === JSON.stringify(expectedHeaders);
 
       if (!workbook) {
-        showAlert("error", "No Workbook Found!");
-        return;
+        throw new Error("No Workbook Found!");
       }
 
       const sheetNames = workbook.SheetNames;
@@ -536,8 +572,7 @@ const AppProvider = ({ children }) => {
       );
 
       if (validSheetNames.length === 0) {
-        showAlert("error", "No valid sheets found!");
-        return;
+        throw new Error("No valid sheets found!");
       }
 
       let totalItems = 0;
@@ -576,8 +611,7 @@ const AppProvider = ({ children }) => {
         const headers = data[0];
 
         if (!validateHeaders(headers)) {
-          showAlert("error", `Invalid headers in sheet ${sheetName}`);
-          return;
+          throw new Error(`Invalid headers in sheet ${sheetName}`);
         }
 
         // Sort the data based on "No:of desks" in descending order and detect duplicates
@@ -607,8 +641,8 @@ const AppProvider = ({ children }) => {
           classroomSet.add(classroom);
 
           if (classroom && desks) {
-            const [rows, columns] = findRowsAndColumns(desks * 2); // Get optimal rows and columns
-            classesData[classroom] = [rows, columns]; // Store as an array of [rows, columns]
+            const [rows, columns] = findRowsAndColumns(desks * 2);
+            classesData[classroom] = [rows, columns];
 
             processedItems++;
             const percent = Math.round((processedItems / totalItems) * 100);
@@ -628,7 +662,7 @@ const AppProvider = ({ children }) => {
         showAlert("success", "Classroom and desk data updated!");
         updateProgress(100);
       } else {
-        showAlert("warning", "Upload Cancelled!");
+        throw new Error("Upload Cancelled!");
       }
     } catch (error) {
       updateProgress(0);
@@ -802,7 +836,7 @@ const AppProvider = ({ children }) => {
       showAlert("success", "Slots Updated Successfully !");
     } catch (error) {
       showAlert("error", error.message);
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -854,7 +888,7 @@ const AppProvider = ({ children }) => {
       showAlert("success", "Batches Updated Successfully !");
     } catch (error) {
       showAlert("error", error.message);
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -886,7 +920,6 @@ const AppProvider = ({ children }) => {
 
         return sortedData;
       } else {
-        console.log("No such document!");
         return [];
       }
     } catch (error) {
@@ -917,7 +950,6 @@ const AppProvider = ({ children }) => {
   };
 
   const fetchslotNames = async () => {
-    showAlert("loading", "Fetching Slots");
     const slotsDocRef = doc(db, "AllExams", "EditedSlots");
 
     try {
@@ -934,7 +966,6 @@ const AppProvider = ({ children }) => {
         const sortedKeys = Object.keys(docData).sort();
         return sortedKeys;
       } else {
-        console.log("No such document!");
         return [];
       }
     } catch (error) {
@@ -949,7 +980,7 @@ const AppProvider = ({ children }) => {
       type: SET_SLOT_LOADING,
       payload: {
         isLoading: true,
-        selectedSlotName:prevslot
+        selectedSlotName: prevslot,
       },
     });
     const examHallDocRef = doc(db, "Classes", "AllotedClasses");
@@ -1030,7 +1061,6 @@ const AppProvider = ({ children }) => {
           },
         });
         showAlert("warning", " Insufficient data for allocating the seats !");
-        console.log("No such document!");
         return [];
       }
     } catch (error) {
@@ -1051,11 +1081,12 @@ const AppProvider = ({ children }) => {
       },
     });
   };
-  const setSingleClassView = (singleClassView) => {
+  const setSingleClassView = (singleClassView, className) => {
     dispatch({
       type: SET_SINGLE_CLASS,
       payload: {
         singleClassView,
+        singleClassName: className,
       },
     });
   };

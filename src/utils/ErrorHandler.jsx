@@ -2,7 +2,7 @@ import Fallback from "../components/Fallback";
 import { ErrorBoundary } from "react-error-boundary";
 
 const errorLogger = (error, errorInfo) => {
-  console.log(error, errorInfo);
+  console.error(error, errorInfo);
 };
 
 const ErrorHandler = ({ children }) => {

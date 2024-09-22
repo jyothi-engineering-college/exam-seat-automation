@@ -7,7 +7,6 @@ import "../../styles/home.css";
 
 function Home() {
   const { deptView, isLoading } = useAppContext();
-   console.log(isLoading);
    
   return (
     <>

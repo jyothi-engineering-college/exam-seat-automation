@@ -4,7 +4,7 @@ import "../styles/Printdept.css"; // Add your custom CSS here
 import { useEffect } from "react";
 
 const PrintNotice = () => {
-  const { noticeBoardView } = useAppContext();
+  const { noticeBoardView,dateTime } = useAppContext();
 
   const createItemPairs = (items) => {
     let pairs = [];
@@ -26,9 +26,20 @@ const PrintNotice = () => {
   }, []);
 
   return (
-    <div>
+    <div className="noticeBoard">
+      <center>
+        {" "}
+        <h2>JYOTHI ENGINEERING COLLEGE</h2>
+        <h3>SEATING ARRANGEMENTS</h3>
+      </center>
+
       <table className="table">
         <thead>
+          <tr>
+            <th colSpan={3} style={{ textAlign: "center" }}>
+              {dateTime}
+            </th>
+          </tr>
           <tr>
             <th>Class</th>
             <th>Register No</th>

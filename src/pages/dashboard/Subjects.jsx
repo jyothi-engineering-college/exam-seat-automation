@@ -14,10 +14,22 @@ const Subjects = () => {
   return (
     <>
       <SubjectsTable />
-      
+
       <FloatButton
+        style={{
+          width: "43px",
+          height: "43px",
+        }}
         tooltip={<div>Add</div>}
-        icon={<PlusCircleOutlined />}
+        icon={
+          <PlusCircleOutlined
+            style={{
+              marginLeft: "-3.2px",
+              marginTop: "0.5px",
+              fontSize: "25px",
+            }}
+          />
+        }
         onClick={handleFloatButtonClick}
       />
     </>

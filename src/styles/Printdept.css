@@ -24,3 +24,10 @@
   font-weight: bold;
   vertical-align: middle;
 }
+.noticeBoard h2{
+  margin-top: -5px;
+  margin-bottom: -20px;
+}
+.noticeBoard h3{
+  text-decoration: underline;
+}
