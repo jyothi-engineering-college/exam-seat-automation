@@ -113,7 +113,7 @@ const FileContainer = () => {
         <Popconfirm
           onConfirm={handleUpload}
           onCancel={handleCancel}
-          title="All current subjects data will be OVERWRITTEN!"
+          title="All current academic data including batches will be deleted !"
           description="Are you sure you want to submit?"
           icon={<QuestionCircleOutlined style={{ color: "red" }} />}
         >

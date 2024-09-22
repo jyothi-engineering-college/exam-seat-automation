@@ -395,34 +395,36 @@ const AppProvider = ({ children }) => {
   };
 
   const uploadSubFile = async (workbook, updateProgress, cancelToken) => {
-    showAlert("warning", "Deleting current Subjects and Slots data ...");
-          const subjectsCollection = collection(db, "Subjects");
-      const slotsDocRef = doc(db, "AllExams", "Slots");
-      const editedSlotsDocRef = doc(db, "AllExams", "EditedSlots");
+    showAlert("warning", "Deleting current academic data ...");
+    const subjectsCollection = collection(db, "Subjects");
+    const slotsDocRef = doc(db, "AllExams", "Slots");
+    const editedSlotsDocRef = doc(db, "AllExams", "EditedSlots");
+
+    const examsRef = doc(firestore, "DeptDetails", "Exams");
+    const regStrengthRef = doc(firestore, "DeptDetails", "RegularStrength");
+    const letStrengthRef = doc(firestore, "DeptDetails", "LetStrength");
+    const dropRef = doc(firestore, "DeptDetails", "Dropped");
+    const rejoinRef = doc(firestore, "DeptDetails", "Rejoined");
+
     try {
-
-
       const querySnapshot = await getDocs(subjectsCollection);
-      const batch = writeBatch(db); // Create a new batch
 
-      // Delete all documents in the Subjects collection
+      const batch = writeBatch(db);
       querySnapshot.forEach((doc) => {
-        batch.delete(doc.ref); // Add delete operation to the batch
+        batch.delete(doc.ref);
       });
 
-      // Delete the Slots and EditedSlots documents
       batch.delete(slotsDocRef);
       batch.delete(editedSlotsDocRef);
+      batch.delete(examsRef);
+      batch.delete(regStrengthRef);
+      batch.delete(letStrengthRef);
+      batch.delete(dropRef);
+      batch.delete(rejoinRef);
 
-      // Commit the batch
       await batch.commit();
-      console.log(
-        "All documents in the Subjects collection and Slots/EditedSlots have been deleted."
-      );
-      showAlert(
-        "success",
-        "Subjects and Slots data deleted..Uploading new Data !"
-      );
+
+      showAlert("success", "All academic data deleted!");
 
       const expectedHeaders = [
         "DEPT",
